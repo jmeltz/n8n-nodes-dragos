@@ -495,7 +495,7 @@ export class Dragos implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Dragos',
 		name: 'dragos',
-		icon: 'file:dragos.png',
+		icon: 'file:dragos.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
