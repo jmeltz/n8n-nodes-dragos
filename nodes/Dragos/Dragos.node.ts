@@ -8,6 +8,489 @@ import {
 	IHttpRequestMethods,
 } from 'n8n-workflow';
 
+async function makeRequest(
+	context: IExecuteFunctions,
+	method: IHttpRequestMethods,
+	url: string,
+	body?: IDataObject,
+	qs?: IDataObject,
+): Promise<IDataObject | IDataObject[]> {
+	const options: IDataObject = {
+		method,
+		url,
+		json: true,
+	};
+
+	if (body && Object.keys(body).length > 0) {
+		options.body = body;
+	}
+
+	if (qs && Object.keys(qs).length > 0) {
+		options.qs = qs;
+	}
+
+	return await context.helpers.requestWithAuthentication.call(context, 'dragosApi', options);
+}
+
+async function executeAssetOperation(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+	baseUrl: string,
+): Promise<IDataObject | IDataObject[]> {
+	if (operation === 'getMany' || operation === 'search') {
+		const returnAll = context.getNodeParameter('returnAll', itemIndex) as boolean;
+		const limit = returnAll ? 1000 : (context.getNodeParameter('limit', itemIndex) as number);
+		const options = context.getNodeParameter('options', itemIndex, {}) as IDataObject;
+
+		const body: IDataObject = {
+			pagination: {
+				pageNumber: 0,
+				pageSize: limit,
+			},
+		};
+
+		if (options.sortField) {
+			body.pagination = {
+				...(body.pagination as IDataObject),
+				sorts: [{ field: options.sortField, descending: options.sortDescending || false }],
+			};
+		}
+
+		const response = await makeRequest(context, 'POST', `${baseUrl}/api/v4/assets`, body);
+		return (response as IDataObject).content as IDataObject[] || response;
+	}
+
+	if (operation === 'getStats') {
+		const selector = context.getNodeParameter('selector', itemIndex, '{}') as string;
+		const groupBys = context.getNodeParameter('groupBys', itemIndex, {}) as IDataObject;
+
+		const body: IDataObject = {
+			selector: JSON.parse(selector),
+			groupBys: (groupBys.groupBy as IDataObject[])?.map((g) => ({
+				field: g.field,
+				interval: g.interval || undefined,
+			})) || [],
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v4/assets/stats`, body);
+	}
+
+	if (operation === 'updateAttributes') {
+		const assetId = context.getNodeParameter('assetId', itemIndex) as number;
+		const attributesParam = context.getNodeParameter('attributes', itemIndex, {}) as IDataObject;
+
+		const attributes: IDataObject = {};
+		if (attributesParam.attribute) {
+			for (const attr of attributesParam.attribute as IDataObject[]) {
+				attributes[attr.name as string] = attr.value;
+			}
+		}
+
+		const body: IDataObject = {
+			assetId,
+			attributes,
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v4/setAssetAttributes`, body);
+	}
+
+	if (operation === 'addSoftwarePackage') {
+		const assetId = context.getNodeParameter('assetId', itemIndex) as number;
+		const lookupType = context.getNodeParameter('packageLookupType', itemIndex) as string;
+
+		let packageLookup: IDataObject;
+		if (lookupType === 'id') {
+			packageLookup = {
+				type: 'id',
+				id: context.getNodeParameter('packageId', itemIndex) as number,
+			};
+		} else {
+			packageLookup = {
+				type: 'coordinates',
+				vendor: context.getNodeParameter('packageVendor', itemIndex) as string || null,
+				name: context.getNodeParameter('packageName', itemIndex) as string,
+				version: context.getNodeParameter('packageVersion', itemIndex) as string,
+			};
+		}
+
+		const body: IDataObject = {
+			assetId,
+			packageLookup,
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v4/addAssetSoftwarePackage`, body);
+	}
+
+	throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`);
+}
+
+async function executeNotificationOperation(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+	baseUrl: string,
+): Promise<IDataObject | IDataObject[]> {
+	if (operation === 'getMany') {
+		const returnAll = context.getNodeParameter('returnAll', itemIndex) as boolean;
+		const limit = returnAll ? 1000 : (context.getNodeParameter('limit', itemIndex) as number);
+		const filter = context.getNodeParameter('filter', itemIndex, '') as string;
+		const options = context.getNodeParameter('options', itemIndex, {}) as IDataObject;
+
+		const qs: IDataObject = {
+			pageNumber: 1,
+			pageSize: limit,
+		};
+
+		if (filter) {
+			qs.filter = filter;
+		}
+
+		if (options.sortField) {
+			qs.sortField = options.sortField;
+			qs.sortDescending = options.sortDescending || false;
+		}
+
+		const response = await makeRequest(context, 'GET', `${baseUrl}/api/v2/notification`, undefined, qs);
+		return (response as IDataObject).content as IDataObject[] || response;
+	}
+
+	if (operation === 'get') {
+		const notificationId = context.getNodeParameter('notificationId', itemIndex) as number;
+
+		const response = await makeRequest(
+			context,
+			'GET',
+			`${baseUrl}/api/v2/notification/batch`,
+			undefined,
+			{ ids: [notificationId] },
+		);
+		const results = response as IDataObject[];
+		return results.length > 0 ? results[0] : {};
+	}
+
+	if (operation === 'update') {
+		const filter = context.getNodeParameter('filter', itemIndex, '') as string;
+		const updateFields = context.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
+
+		const qs: IDataObject = {};
+		if (filter) {
+			qs.filter = filter;
+		}
+
+		return await makeRequest(context, 'PUT', `${baseUrl}/api/v2/notification`, updateFields, qs);
+	}
+
+	if (operation === 'getStats') {
+		const filter = context.getNodeParameter('filter', itemIndex, '') as string;
+
+		const qs: IDataObject = {};
+		if (filter) {
+			qs.filter = filter;
+		}
+
+		return await makeRequest(context, 'GET', `${baseUrl}/api/v2/notification/stats`, undefined, qs);
+	}
+
+	throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`);
+}
+
+async function executeVulnerabilityOperation(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+	baseUrl: string,
+): Promise<IDataObject | IDataObject[]> {
+	if (operation === 'getMany') {
+		const selector = context.getNodeParameter('selector', itemIndex, '{}') as string;
+		const returnAll = context.getNodeParameter('returnAll', itemIndex) as boolean;
+
+		let pageNumber = 0;
+		let pageSize = 10;
+
+		if (!returnAll) {
+			pageNumber = context.getNodeParameter('pageNumber', itemIndex, 0) as number;
+			pageSize = context.getNodeParameter('pageSize', itemIndex, 10) as number;
+		} else {
+			pageSize = 1000;
+		}
+
+		const body: IDataObject = {
+			selector: JSON.parse(selector),
+			pagination: {
+				pageNumber,
+				pageSize,
+			},
+		};
+
+		const response = await makeRequest(context, 'POST', `${baseUrl}/api/v1/vulnerability`, body);
+		return (response as IDataObject).content as IDataObject[] || response;
+	}
+
+	if (operation === 'getStats') {
+		const selector = context.getNodeParameter('selector', itemIndex, '{}') as string;
+		const groupBys = context.getNodeParameter('groupBys', itemIndex, {}) as IDataObject;
+
+		const body: IDataObject = {
+			selector: JSON.parse(selector),
+			groupBys: (groupBys.groupBy as IDataObject[])?.map((g) => ({
+				field: g.field,
+				interval: g.interval || undefined,
+			})) || [],
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v1/vulnerability/stats`, body);
+	}
+
+	if (operation === 'setState') {
+		const selector = context.getNodeParameter('selector', itemIndex, '{}') as string;
+		const parsedSelector = JSON.parse(selector);
+
+		const body: IDataObject = {
+			updates: parsedSelector.updates || [],
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v1/vulnerability/setState`, body);
+	}
+
+	throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`);
+}
+
+async function executeVulnerabilityDetectionOperation(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+	baseUrl: string,
+): Promise<IDataObject | IDataObject[]> {
+	if (operation === 'getMany') {
+		const selector = context.getNodeParameter('selector', itemIndex, '{}') as string;
+		const returnAll = context.getNodeParameter('returnAll', itemIndex) as boolean;
+
+		let pageNumber = 0;
+		let pageSize = 10;
+
+		if (!returnAll) {
+			pageNumber = context.getNodeParameter('pageNumber', itemIndex, 0) as number;
+			pageSize = context.getNodeParameter('pageSize', itemIndex, 10) as number;
+		} else {
+			pageSize = 1000;
+		}
+
+		const body: IDataObject = {
+			selector: JSON.parse(selector),
+			pagination: {
+				pageNumber,
+				pageSize,
+			},
+		};
+
+		const response = await makeRequest(context, 'POST', `${baseUrl}/api/v1/vulnerability/detection`, body);
+		return (response as IDataObject).content as IDataObject[] || response;
+	}
+
+	if (operation === 'getStats') {
+		const selector = context.getNodeParameter('selector', itemIndex, '{}') as string;
+		const groupBys = context.getNodeParameter('groupBys', itemIndex, {}) as IDataObject;
+
+		const body: IDataObject = {
+			selector: JSON.parse(selector),
+			groupBys: (groupBys.groupBy as IDataObject[])?.map((g) => ({
+				field: g.field,
+				interval: g.interval || undefined,
+			})) || [],
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v1/vulnerability/detection/stats`, body);
+	}
+
+	if (operation === 'update' || operation === 'setDisposition') {
+		const detectionUpdates = context.getNodeParameter('detectionUpdates', itemIndex, {}) as IDataObject;
+
+		const updates = (detectionUpdates.update as IDataObject[])?.map((u) => ({
+			id: u.id,
+			disposition: u.disposition,
+			priority: u.priority,
+			reason: u.reason,
+		})) || [];
+
+		const endpoint = operation === 'setDisposition'
+			? '/api/v1/vulnerability/detection/setDisposition'
+			: '/api/v1/vulnerability/detection/update';
+
+		const body: IDataObject = { updates };
+
+		return await makeRequest(context, 'POST', `${baseUrl}${endpoint}`, body);
+	}
+
+	if (operation === 'export') {
+		const selector = context.getNodeParameter('selector', itemIndex, '{}') as string;
+
+		const body: IDataObject = {
+			selector: JSON.parse(selector),
+			format: 'CSV',
+			fieldMappings: [
+				{ exportField: 'ID', vulnField: 'id' },
+				{ exportField: 'CVE', vulnField: 'cve' },
+				{ exportField: 'Severity', vulnField: 'severity' },
+				{ exportField: 'Asset', vulnField: 'assetId' },
+				{ exportField: 'Disposition', vulnField: 'disposition' },
+			],
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v1/vulnerability/detection/export`, body);
+	}
+
+	throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`);
+}
+
+async function executeJobOperation(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+	baseUrl: string,
+): Promise<IDataObject | IDataObject[]> {
+	const ddisBaseUrl = `${baseUrl}/ddis`;
+
+	if (operation === 'getMany') {
+		const returnAll = context.getNodeParameter('returnAll', itemIndex) as boolean;
+		const limit = returnAll ? 0 : (context.getNodeParameter('limit', itemIndex) as number);
+
+		const qs: IDataObject = {
+			page_size: limit,
+			page_number: 0,
+		};
+
+		const response = await makeRequest(context, 'GET', `${ddisBaseUrl}/api/v1/jobs/`, undefined, qs);
+		return (response as IDataObject).content as IDataObject[] || response;
+	}
+
+	if (operation === 'get') {
+		const jobId = context.getNodeParameter('jobId', itemIndex) as string;
+		return await makeRequest(context, 'GET', `${ddisBaseUrl}/api/v1/jobs/${jobId}`);
+	}
+
+	if (operation === 'create') {
+		const jobType = context.getNodeParameter('jobType', itemIndex) as string;
+		const parserId = context.getNodeParameter('parserId', itemIndex) as string;
+		const networkId = context.getNodeParameter('networkId', itemIndex) as string;
+		const confidence = context.getNodeParameter('confidence', itemIndex) as number;
+		const additionalFields = context.getNodeParameter('jobAdditionalFields', itemIndex, {}) as IDataObject;
+
+		const body: IDataObject = {
+			job_type: jobType,
+			parser_id: parserId,
+			network_id: networkId,
+			confidence,
+			...additionalFields,
+		};
+
+		return await makeRequest(context, 'POST', `${ddisBaseUrl}/api/v1/jobs/`, body);
+	}
+
+	if (operation === 'continue') {
+		const jobId = context.getNodeParameter('jobId', itemIndex) as string;
+		const stepId = context.getNodeParameter('stepId', itemIndex, 'PARSE') as string;
+
+		return await makeRequest(
+			context,
+			'POST',
+			`${ddisBaseUrl}/api/v1/jobs/${jobId}/continue`,
+			undefined,
+			{ step_id: stepId },
+		);
+	}
+
+	if (operation === 'stop') {
+		const jobId = context.getNodeParameter('jobId', itemIndex) as string;
+		return await makeRequest(context, 'POST', `${ddisBaseUrl}/api/v1/jobs/${jobId}/stop`);
+	}
+
+	if (operation === 'delete') {
+		const jobId = context.getNodeParameter('jobId', itemIndex) as string;
+		return await makeRequest(context, 'DELETE', `${ddisBaseUrl}/api/v1/jobs/${jobId}`);
+	}
+
+	throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`);
+}
+
+async function executeZoneOperation(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+	baseUrl: string,
+): Promise<IDataObject | IDataObject[]> {
+	if (operation === 'getMany') {
+		const returnAll = context.getNodeParameter('returnAll', itemIndex) as boolean;
+		const limit = returnAll ? 1000 : (context.getNodeParameter('limit', itemIndex) as number);
+
+		const body: IDataObject = {
+			pagination: {
+				pageNumber: 0,
+				pageSize: limit,
+			},
+		};
+
+		const response = await makeRequest(context, 'POST', `${baseUrl}/api/v4/zones`, body);
+		return (response as IDataObject).content as IDataObject[] || response;
+	}
+
+	if (operation === 'get') {
+		const zoneId = context.getNodeParameter('zoneId', itemIndex) as number;
+
+		const body: IDataObject = {
+			selector: {
+				idIn: [zoneId.toString()],
+			},
+			pagination: {
+				pageNumber: 0,
+				pageSize: 1,
+			},
+		};
+
+		const response = await makeRequest(context, 'POST', `${baseUrl}/api/v4/zones`, body);
+		const content = (response as IDataObject).content as IDataObject[];
+		return content && content.length > 0 ? content[0] : {};
+	}
+
+	if (operation === 'create') {
+		const zoneName = context.getNodeParameter('zoneName', itemIndex) as string;
+		const zoneFields = context.getNodeParameter('zoneFields', itemIndex, {}) as IDataObject;
+
+		const body: IDataObject = {
+			name: zoneName,
+			...zoneFields,
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v4/createZone`, body);
+	}
+
+	if (operation === 'update') {
+		const zoneId = context.getNodeParameter('zoneId', itemIndex) as number;
+		const zoneName = context.getNodeParameter('zoneName', itemIndex) as string;
+		const zoneFields = context.getNodeParameter('zoneFields', itemIndex, {}) as IDataObject;
+
+		const body: IDataObject = {
+			id: zoneId,
+			name: zoneName,
+			...zoneFields,
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v4/updateZone`, body);
+	}
+
+	if (operation === 'delete') {
+		const zoneId = context.getNodeParameter('zoneId', itemIndex) as number;
+
+		const body: IDataObject = {
+			id: zoneId,
+		};
+
+		return await makeRequest(context, 'POST', `${baseUrl}/api/v4/deleteZone`, body);
+	}
+
+	throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`);
+}
+
 export class Dragos implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Dragos',
@@ -1010,17 +1493,17 @@ export class Dragos implements INodeType {
 				let responseData: IDataObject | IDataObject[];
 
 				if (resource === 'asset') {
-					responseData = await this.executeAssetOperation(i, operation, baseUrl);
+					responseData = await executeAssetOperation(this, i, operation, baseUrl);
 				} else if (resource === 'notification') {
-					responseData = await this.executeNotificationOperation(i, operation, baseUrl);
+					responseData = await executeNotificationOperation(this, i, operation, baseUrl);
 				} else if (resource === 'vulnerability') {
-					responseData = await this.executeVulnerabilityOperation(i, operation, baseUrl);
+					responseData = await executeVulnerabilityOperation(this, i, operation, baseUrl);
 				} else if (resource === 'vulnerabilityDetection') {
-					responseData = await this.executeVulnerabilityDetectionOperation(i, operation, baseUrl);
+					responseData = await executeVulnerabilityDetectionOperation(this, i, operation, baseUrl);
 				} else if (resource === 'job') {
-					responseData = await this.executeJobOperation(i, operation, baseUrl);
+					responseData = await executeJobOperation(this, i, operation, baseUrl);
 				} else if (resource === 'zone') {
-					responseData = await this.executeZoneOperation(i, operation, baseUrl);
+					responseData = await executeZoneOperation(this, i, operation, baseUrl);
 				} else {
 					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`);
 				}
@@ -1044,483 +1527,5 @@ export class Dragos implements INodeType {
 		}
 
 		return [returnData];
-	}
-
-	private async makeRequest(
-		context: IExecuteFunctions,
-		method: IHttpRequestMethods,
-		url: string,
-		body?: IDataObject,
-		qs?: IDataObject,
-	): Promise<IDataObject | IDataObject[]> {
-		const options: IDataObject = {
-			method,
-			url,
-			json: true,
-		};
-
-		if (body && Object.keys(body).length > 0) {
-			options.body = body;
-		}
-
-		if (qs && Object.keys(qs).length > 0) {
-			options.qs = qs;
-		}
-
-		return await context.helpers.requestWithAuthentication.call(context, 'dragosApi', options);
-	}
-
-	private async executeAssetOperation(
-		itemIndex: number,
-		operation: string,
-		baseUrl: string,
-	): Promise<IDataObject | IDataObject[]> {
-		if (operation === 'getMany' || operation === 'search') {
-			const returnAll = this.getNodeParameter('returnAll', itemIndex) as boolean;
-			const limit = returnAll ? 1000 : (this.getNodeParameter('limit', itemIndex) as number);
-			const options = this.getNodeParameter('options', itemIndex, {}) as IDataObject;
-
-			const body: IDataObject = {
-				pagination: {
-					pageNumber: 0,
-					pageSize: limit,
-				},
-			};
-
-			if (options.sortField) {
-				body.pagination = {
-					...(body.pagination as IDataObject),
-					sorts: [{ field: options.sortField, descending: options.sortDescending || false }],
-				};
-			}
-
-			const response = await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/assets`, body);
-			return (response as IDataObject).content as IDataObject[] || response;
-		}
-
-		if (operation === 'getStats') {
-			const selector = this.getNodeParameter('selector', itemIndex, '{}') as string;
-			const groupBys = this.getNodeParameter('groupBys', itemIndex, {}) as IDataObject;
-
-			const body: IDataObject = {
-				selector: JSON.parse(selector),
-				groupBys: (groupBys.groupBy as IDataObject[])?.map((g) => ({
-					field: g.field,
-					interval: g.interval || undefined,
-				})) || [],
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/assets/stats`, body);
-		}
-
-		if (operation === 'updateAttributes') {
-			const assetId = this.getNodeParameter('assetId', itemIndex) as number;
-			const attributesParam = this.getNodeParameter('attributes', itemIndex, {}) as IDataObject;
-
-			const attributes: IDataObject = {};
-			if (attributesParam.attribute) {
-				for (const attr of attributesParam.attribute as IDataObject[]) {
-					attributes[attr.name as string] = attr.value;
-				}
-			}
-
-			const body: IDataObject = {
-				assetId,
-				attributes,
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/setAssetAttributes`, body);
-		}
-
-		if (operation === 'addSoftwarePackage') {
-			const assetId = this.getNodeParameter('assetId', itemIndex) as number;
-			const lookupType = this.getNodeParameter('packageLookupType', itemIndex) as string;
-
-			let packageLookup: IDataObject;
-			if (lookupType === 'id') {
-				packageLookup = {
-					type: 'id',
-					id: this.getNodeParameter('packageId', itemIndex) as number,
-				};
-			} else {
-				packageLookup = {
-					type: 'coordinates',
-					vendor: this.getNodeParameter('packageVendor', itemIndex) as string || null,
-					name: this.getNodeParameter('packageName', itemIndex) as string,
-					version: this.getNodeParameter('packageVersion', itemIndex) as string,
-				};
-			}
-
-			const body: IDataObject = {
-				assetId,
-				packageLookup,
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/addAssetSoftwarePackage`, body);
-		}
-
-		throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-	}
-
-	private async executeNotificationOperation(
-		itemIndex: number,
-		operation: string,
-		baseUrl: string,
-	): Promise<IDataObject | IDataObject[]> {
-		if (operation === 'getMany') {
-			const returnAll = this.getNodeParameter('returnAll', itemIndex) as boolean;
-			const limit = returnAll ? 1000 : (this.getNodeParameter('limit', itemIndex) as number);
-			const filter = this.getNodeParameter('filter', itemIndex, '') as string;
-			const options = this.getNodeParameter('options', itemIndex, {}) as IDataObject;
-
-			const qs: IDataObject = {
-				pageNumber: 1,
-				pageSize: limit,
-			};
-
-			if (filter) {
-				qs.filter = filter;
-			}
-
-			if (options.sortField) {
-				qs.sortField = options.sortField;
-				qs.sortDescending = options.sortDescending || false;
-			}
-
-			const response = await this.makeRequest(this, 'GET', `${baseUrl}/api/v2/notification`, undefined, qs);
-			return (response as IDataObject).content as IDataObject[] || response;
-		}
-
-		if (operation === 'get') {
-			const notificationId = this.getNodeParameter('notificationId', itemIndex) as number;
-
-			const response = await this.makeRequest(
-				this,
-				'GET',
-				`${baseUrl}/api/v2/notification/batch`,
-				undefined,
-				{ ids: [notificationId] },
-			);
-			const results = response as IDataObject[];
-			return results.length > 0 ? results[0] : {};
-		}
-
-		if (operation === 'update') {
-			const filter = this.getNodeParameter('filter', itemIndex, '') as string;
-			const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
-
-			const qs: IDataObject = {};
-			if (filter) {
-				qs.filter = filter;
-			}
-
-			return await this.makeRequest(this, 'PUT', `${baseUrl}/api/v2/notification`, updateFields, qs);
-		}
-
-		if (operation === 'getStats') {
-			const filter = this.getNodeParameter('filter', itemIndex, '') as string;
-
-			const qs: IDataObject = {};
-			if (filter) {
-				qs.filter = filter;
-			}
-
-			return await this.makeRequest(this, 'GET', `${baseUrl}/api/v2/notification/stats`, undefined, qs);
-		}
-
-		throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-	}
-
-	private async executeVulnerabilityOperation(
-		itemIndex: number,
-		operation: string,
-		baseUrl: string,
-	): Promise<IDataObject | IDataObject[]> {
-		if (operation === 'getMany') {
-			const selector = this.getNodeParameter('selector', itemIndex, '{}') as string;
-			const returnAll = this.getNodeParameter('returnAll', itemIndex) as boolean;
-
-			let pageNumber = 0;
-			let pageSize = 10;
-
-			if (!returnAll) {
-				pageNumber = this.getNodeParameter('pageNumber', itemIndex, 0) as number;
-				pageSize = this.getNodeParameter('pageSize', itemIndex, 10) as number;
-			} else {
-				pageSize = 1000;
-			}
-
-			const body: IDataObject = {
-				selector: JSON.parse(selector),
-				pagination: {
-					pageNumber,
-					pageSize,
-				},
-			};
-
-			const response = await this.makeRequest(this, 'POST', `${baseUrl}/api/v1/vulnerability`, body);
-			return (response as IDataObject).content as IDataObject[] || response;
-		}
-
-		if (operation === 'getStats') {
-			const selector = this.getNodeParameter('selector', itemIndex, '{}') as string;
-			const groupBys = this.getNodeParameter('groupBys', itemIndex, {}) as IDataObject;
-
-			const body: IDataObject = {
-				selector: JSON.parse(selector),
-				groupBys: (groupBys.groupBy as IDataObject[])?.map((g) => ({
-					field: g.field,
-					interval: g.interval || undefined,
-				})) || [],
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v1/vulnerability/stats`, body);
-		}
-
-		if (operation === 'setState') {
-			const selector = this.getNodeParameter('selector', itemIndex, '{}') as string;
-			const parsedSelector = JSON.parse(selector);
-
-			// This requires specific vulnerability IDs and states
-			const body: IDataObject = {
-				updates: parsedSelector.updates || [],
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v1/vulnerability/setState`, body);
-		}
-
-		throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-	}
-
-	private async executeVulnerabilityDetectionOperation(
-		itemIndex: number,
-		operation: string,
-		baseUrl: string,
-	): Promise<IDataObject | IDataObject[]> {
-		if (operation === 'getMany') {
-			const selector = this.getNodeParameter('selector', itemIndex, '{}') as string;
-			const returnAll = this.getNodeParameter('returnAll', itemIndex) as boolean;
-
-			let pageNumber = 0;
-			let pageSize = 10;
-
-			if (!returnAll) {
-				pageNumber = this.getNodeParameter('pageNumber', itemIndex, 0) as number;
-				pageSize = this.getNodeParameter('pageSize', itemIndex, 10) as number;
-			} else {
-				pageSize = 1000;
-			}
-
-			const body: IDataObject = {
-				selector: JSON.parse(selector),
-				pagination: {
-					pageNumber,
-					pageSize,
-				},
-			};
-
-			const response = await this.makeRequest(this, 'POST', `${baseUrl}/api/v1/vulnerability/detection`, body);
-			return (response as IDataObject).content as IDataObject[] || response;
-		}
-
-		if (operation === 'getStats') {
-			const selector = this.getNodeParameter('selector', itemIndex, '{}') as string;
-			const groupBys = this.getNodeParameter('groupBys', itemIndex, {}) as IDataObject;
-
-			const body: IDataObject = {
-				selector: JSON.parse(selector),
-				groupBys: (groupBys.groupBy as IDataObject[])?.map((g) => ({
-					field: g.field,
-					interval: g.interval || undefined,
-				})) || [],
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v1/vulnerability/detection/stats`, body);
-		}
-
-		if (operation === 'update' || operation === 'setDisposition') {
-			const detectionUpdates = this.getNodeParameter('detectionUpdates', itemIndex, {}) as IDataObject;
-
-			const updates = (detectionUpdates.update as IDataObject[])?.map((u) => ({
-				id: u.id,
-				disposition: u.disposition,
-				priority: u.priority,
-				reason: u.reason,
-			})) || [];
-
-			const endpoint = operation === 'setDisposition'
-				? '/api/v1/vulnerability/detection/setDisposition'
-				: '/api/v1/vulnerability/detection/update';
-
-			const body: IDataObject = { updates };
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}${endpoint}`, body);
-		}
-
-		if (operation === 'export') {
-			const selector = this.getNodeParameter('selector', itemIndex, '{}') as string;
-
-			const body: IDataObject = {
-				selector: JSON.parse(selector),
-				format: 'CSV',
-				fieldMappings: [
-					{ exportField: 'ID', vulnField: 'id' },
-					{ exportField: 'CVE', vulnField: 'cve' },
-					{ exportField: 'Severity', vulnField: 'severity' },
-					{ exportField: 'Asset', vulnField: 'assetId' },
-					{ exportField: 'Disposition', vulnField: 'disposition' },
-				],
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v1/vulnerability/detection/export`, body);
-		}
-
-		throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-	}
-
-	private async executeJobOperation(
-		itemIndex: number,
-		operation: string,
-		baseUrl: string,
-	): Promise<IDataObject | IDataObject[]> {
-		const ddisBaseUrl = `${baseUrl}/ddis`;
-
-		if (operation === 'getMany') {
-			const returnAll = this.getNodeParameter('returnAll', itemIndex) as boolean;
-			const limit = returnAll ? 0 : (this.getNodeParameter('limit', itemIndex) as number);
-
-			const qs: IDataObject = {
-				page_size: limit,
-				page_number: 0,
-			};
-
-			const response = await this.makeRequest(this, 'GET', `${ddisBaseUrl}/api/v1/jobs/`, undefined, qs);
-			return (response as IDataObject).content as IDataObject[] || response;
-		}
-
-		if (operation === 'get') {
-			const jobId = this.getNodeParameter('jobId', itemIndex) as string;
-			return await this.makeRequest(this, 'GET', `${ddisBaseUrl}/api/v1/jobs/${jobId}`);
-		}
-
-		if (operation === 'create') {
-			const jobType = this.getNodeParameter('jobType', itemIndex) as string;
-			const parserId = this.getNodeParameter('parserId', itemIndex) as string;
-			const networkId = this.getNodeParameter('networkId', itemIndex) as string;
-			const confidence = this.getNodeParameter('confidence', itemIndex) as number;
-			const additionalFields = this.getNodeParameter('jobAdditionalFields', itemIndex, {}) as IDataObject;
-
-			const body: IDataObject = {
-				job_type: jobType,
-				parser_id: parserId,
-				network_id: networkId,
-				confidence,
-				...additionalFields,
-			};
-
-			return await this.makeRequest(this, 'POST', `${ddisBaseUrl}/api/v1/jobs/`, body);
-		}
-
-		if (operation === 'continue') {
-			const jobId = this.getNodeParameter('jobId', itemIndex) as string;
-			const stepId = this.getNodeParameter('stepId', itemIndex, 'PARSE') as string;
-
-			return await this.makeRequest(
-				this,
-				'POST',
-				`${ddisBaseUrl}/api/v1/jobs/${jobId}/continue`,
-				undefined,
-				{ step_id: stepId },
-			);
-		}
-
-		if (operation === 'stop') {
-			const jobId = this.getNodeParameter('jobId', itemIndex) as string;
-			return await this.makeRequest(this, 'POST', `${ddisBaseUrl}/api/v1/jobs/${jobId}/stop`);
-		}
-
-		if (operation === 'delete') {
-			const jobId = this.getNodeParameter('jobId', itemIndex) as string;
-			return await this.makeRequest(this, 'DELETE', `${ddisBaseUrl}/api/v1/jobs/${jobId}`);
-		}
-
-		throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-	}
-
-	private async executeZoneOperation(
-		itemIndex: number,
-		operation: string,
-		baseUrl: string,
-	): Promise<IDataObject | IDataObject[]> {
-		if (operation === 'getMany') {
-			const returnAll = this.getNodeParameter('returnAll', itemIndex) as boolean;
-			const limit = returnAll ? 1000 : (this.getNodeParameter('limit', itemIndex) as number);
-
-			const body: IDataObject = {
-				pagination: {
-					pageNumber: 0,
-					pageSize: limit,
-				},
-			};
-
-			const response = await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/zones`, body);
-			return (response as IDataObject).content as IDataObject[] || response;
-		}
-
-		if (operation === 'get') {
-			const zoneId = this.getNodeParameter('zoneId', itemIndex) as number;
-
-			const body: IDataObject = {
-				selector: {
-					idIn: [zoneId.toString()],
-				},
-				pagination: {
-					pageNumber: 0,
-					pageSize: 1,
-				},
-			};
-
-			const response = await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/zones`, body);
-			const content = (response as IDataObject).content as IDataObject[];
-			return content && content.length > 0 ? content[0] : {};
-		}
-
-		if (operation === 'create') {
-			const zoneName = this.getNodeParameter('zoneName', itemIndex) as string;
-			const zoneFields = this.getNodeParameter('zoneFields', itemIndex, {}) as IDataObject;
-
-			const body: IDataObject = {
-				name: zoneName,
-				...zoneFields,
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/createZone`, body);
-		}
-
-		if (operation === 'update') {
-			const zoneId = this.getNodeParameter('zoneId', itemIndex) as number;
-			const zoneName = this.getNodeParameter('zoneName', itemIndex) as string;
-			const zoneFields = this.getNodeParameter('zoneFields', itemIndex, {}) as IDataObject;
-
-			const body: IDataObject = {
-				id: zoneId,
-				name: zoneName,
-				...zoneFields,
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/updateZone`, body);
-		}
-
-		if (operation === 'delete') {
-			const zoneId = this.getNodeParameter('zoneId', itemIndex) as number;
-
-			const body: IDataObject = {
-				id: zoneId,
-			};
-
-			return await this.makeRequest(this, 'POST', `${baseUrl}/api/v4/deleteZone`, body);
-		}
-
-		throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
 	}
 }
