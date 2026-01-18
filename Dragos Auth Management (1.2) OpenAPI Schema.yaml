@@ -1,0 +1,5532 @@
+---
+openapi: "3.0.3"
+info:
+  title: "Auth Management"
+  description: "Auth Management HTTP API"
+  version: "1.2"
+paths:
+  /api/v1/authProvider:
+    get:
+      operationId: "getAuthProviders"
+      summary: "Get Authentication Providers"
+      tags:
+      - "Authentication Providers"
+      description: "Returns authentication providers.\n"
+      parameters:
+      - $ref: "#/components/parameters/PageSizeParameter"
+      - $ref: "#/components/parameters/PageNumberParameter"
+      - in: "query"
+        name: "sorts"
+        schema:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AuthProviderSortField"
+      - in: "query"
+        name: "nameMatches"
+        schema:
+          type: "string"
+          description: "Case-insensitive, glob-like match."
+        example: "ldap"
+      - in: "query"
+        name: "builtIn"
+        schema:
+          type: "boolean"
+        example: true
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthProviderPage"
+              examples:
+                allProvidersByName:
+                  summary: "Get all authentication providers"
+                  value:
+                    pageNumber: 1
+                    pageSize: 10
+                    totalCount: 2
+                    totalCountExceededLimit: false
+                    totalPages: 1
+                    sorts:
+                    - field: "name"
+                      descending: true
+                    content:
+                    - id: "00000000-0000-0000-0000-000000000002"
+                      name: "Local Username/Password"
+                      builtIn: true
+                      publicConfig:
+                        type: "password"
+                        minLength: 14
+                        minUppercase: 0
+                        minLowercase: 0
+                        minDigit: 0
+                        minSpecial: 0
+                      config:
+                        type: "password"
+                        minLength: 14
+                        minUppercase: 0
+                        minLowercase: 0
+                        minDigit: 0
+                        minSpecial: 0
+                        historyRemember: 5
+                        lockoutThresholdAttempts: 10
+                        lockoutThresholdObservationSeconds: 7200
+                        lockoutSeconds: 7200
+                        validDays: 30
+                    - id: "00000000-0000-0000-0000-000000000001"
+                      name: "API Keys"
+                      builtIn: true
+                      publicConfig:
+                        type: "apikey"
+                      config:
+                        type: "apikey"
+                        enabledForNonBuiltInIdentities: false
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    post:
+      operationId: "createAuthProvider"
+      summary: "Create New Authentication Provider"
+      tags:
+      - "Authentication Providers"
+      description: "Creates a new authentication provider.\n"
+      x-requires-privileges:
+      - "auth:provider:manage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthProviderCreate"
+            examples:
+              createLdapProvider:
+                summary: "Create LDAP authentication provider (OpenLDAP example)"
+                value:
+                  name: "futurama"
+                  config:
+                    type: "ldap"
+                    primaryServer:
+                      host: "ldaptest-svc"
+                      port: 10389
+                    secondaryServer:
+                      host: "ldaptest2-svc"
+                      port: 10389
+                    encryption: "StartTLS"
+                    schemaBaseDn: "dc=planetexpress,dc=com"
+                    schemaUserSubtrees:
+                    - "ou=people"
+                    schemaUserIdAttribute: "uid"
+                    schemaUserIdAttributeLabel: "uid label"
+                    schemaUserDisplayNameAttribute: "cn"
+                    schemaUserGroupMembershipAttribute: "member"
+                    rolesForAllUsers:
+                    - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                    rolesByGroupDn:
+                    - groupDn: "cn=admin_staff,ou=people,dc=planetexpress,dc=com"
+                      roleIds:
+                      - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                    autoProvisionNewIdentities: false
+                    minimumRefreshSeconds: 300
+                    bindDn: "cn=admin,dc=planetexpress,dc=com"
+                    bindPassword: "GoodNewsEveryone"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthProvider"
+              examples:
+                createLdapProvider:
+                  summary: "Create LDAP authentication provider (OpenLDAP example)"
+                  value:
+                    id: "13da98ca-950d-44da-8992-cbacf4c2c3ee"
+                    name: "futurama"
+                    builtIn: false
+                    publicConfig:
+                      type: "ldap"
+                      schemaUserIdAttributeLabel: "uid label"
+                    config:
+                      type: "ldap"
+                      primaryServer:
+                        host: "ldaptest-svc"
+                        port: 10389
+                      secondaryServer:
+                        host: "ldaptest2-svc"
+                        port: 10389
+                      encryption: "StartTLS"
+                      schemaBaseDn: "dc=planetexpress,dc=com"
+                      schemaUserSubtrees:
+                      - "ou=people"
+                      schemaUserIdAttribute: "uid"
+                      schemaUserIdAttributeLabel: "uid label"
+                      schemaUserDisplayNameAttribute: "cn"
+                      schemaUserGroupMembershipAttribute: "member"
+                      rolesForAllUsers:
+                      - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                      rolesByGroupDn:
+                      - groupDn: "cn=admin_staff,ou=people,dc=planetexpress,dc=com"
+                        roleIds:
+                        - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                      autoProvisionNewIdentities: false
+                      minimumRefreshSeconds: 300
+                      bindDn: "cn=admin,dc=planetexpress,dc=com"
+                      bindPassword: "GoodNewsEveryone"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/authProvider/{id}:
+    get:
+      operationId: "getAuthProvider"
+      summary: "Get Authentication Provider"
+      tags:
+      - "Authentication Providers"
+      description: "Returns an authentication provider.\n"
+      parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000001"
+        required: true
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthProvider"
+              examples:
+                getAuthProvider:
+                  summary: "Get authentication provider"
+                  value:
+                    id: "00000000-0000-0000-0000-000000000001"
+                    name: "API Keys"
+                    builtIn: true
+                    publicConfig:
+                      type: "apikey"
+                    config:
+                      type: "apikey"
+                      enabledForNonBuiltInIdentities: false
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    put:
+      operationId: "updateAuthProvider"
+      summary: "Update Authentication Provider"
+      tags:
+      - "Authentication Providers"
+      description: "Updates an existing authentication provider.\n"
+      x-requires-privileges:
+      - "auth:provider:manage"
+      parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "d20670ca-5b14-4e81-ac3d-6d22a322e7d6"
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthProviderUpdate"
+            examples:
+              updateLdapProvider:
+                summary: "Update LDAP authentication provider (OpenLDAP example)"
+                value:
+                  name: "futurama"
+                  config:
+                    type: "ldap"
+                    primaryServer:
+                      host: "ldaptest2-svc"
+                      port: 10389
+                    secondaryServer:
+                      host: "ldaptest-svc"
+                      port: 10389
+                    encryption: "None"
+                    schemaBaseDn: "dc=planetexpress,dc=com"
+                    schemaUserSubtrees:
+                    - "ou=people"
+                    schemaUserIdAttribute: "uid"
+                    schemaUserIdAttributeLabel: "uid label"
+                    schemaUserDisplayNameAttribute: "cn"
+                    schemaUserGroupMembershipAttribute: "member"
+                    rolesForAllUsers:
+                    - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                    rolesByGroupDn:
+                    - groupDn: "cn=admin_staff,ou=people,dc=planetexpress,dc=com"
+                      roleIds:
+                      - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                    autoProvisionNewIdentities: false
+                    minimumRefreshSeconds: 300
+                    bindDn: "cn=admin,dc=planetexpress,dc=com"
+                    bindPassword: "GoodNewsEveryone"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthProvider"
+              examples:
+                updateLdapProvider:
+                  summary: "Update LDAP authentication provider (OpenLDAP example)"
+                  value:
+                    id: "d20670ca-5b14-4e81-ac3d-6d22a322e7d6"
+                    name: "futurama"
+                    builtIn: false
+                    publicConfig:
+                      type: "ldap"
+                      schemaUserIdAttributeLabel: "uid label"
+                    config:
+                      type: "ldap"
+                      primaryServer:
+                        host: "ldaptest2-svc"
+                        port: 10389
+                      secondaryServer:
+                        host: "ldaptest-svc"
+                        port: 10389
+                      encryption: "None"
+                      schemaBaseDn: "dc=planetexpress,dc=com"
+                      schemaUserSubtrees:
+                      - "ou=people"
+                      schemaUserIdAttribute: "uid"
+                      schemaUserIdAttributeLabel: "uid label"
+                      schemaUserDisplayNameAttribute: "cn"
+                      schemaUserGroupMembershipAttribute: "member"
+                      rolesForAllUsers:
+                      - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                      rolesByGroupDn:
+                      - groupDn: "cn=admin_staff,ou=people,dc=planetexpress,dc=com"
+                        roleIds:
+                        - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                      autoProvisionNewIdentities: false
+                      minimumRefreshSeconds: 300
+                      bindDn: "cn=admin,dc=planetexpress,dc=com"
+                      bindPassword: "GoodNewsEveryone"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    delete:
+      operationId: "deleteAuthProvider"
+      summary: "Delete Authentication Provider"
+      tags:
+      - "Authentication Providers"
+      description: "Deletes an existing authentication provider.\n"
+      x-requires-privileges:
+      - "auth:provider:manage"
+      parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "d20670ca-5b14-4e81-ac3d-6d22a322e7d6"
+        required: true
+      responses:
+        "200":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/authProvider/ldap/testConfig:
+    post:
+      operationId: "testLdapConfig"
+      summary: "Test LDAP Configuration"
+      tags:
+      - "Authentication Providers"
+      description: "Tests LDAP configuration.\n"
+      x-requires-privileges:
+      - "auth:provider:manage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestLdapRequest"
+            examples:
+              testConfig:
+                summary: "Test LDAP config"
+                value:
+                  config:
+                    type: "ldap"
+                    primaryServer:
+                      host: "ldaptest-svc"
+                      port: 636
+                      trustedCertificatesPem: "-----BEGIN CERTIFICATE-----123abc-----END\
+                        \ CERTIFICATE-----"
+                    encryption: "LDAPS"
+                    schemaBaseDn: "dc=planetexpress,dc=com"
+                    schemaUserSubtrees:
+                    - "ou=people"
+                    schemaUserIdAttribute: "uid"
+                    schemaUserIdAttributeLabel: "uid label"
+                    schemaUserDisplayNameAttribute: "cn"
+                    schemaUserGroupMembershipAttribute: "member"
+                    rolesForAllUsers:
+                    - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                    rolesByGroupDn:
+                    - groupDn: "cn=admin_staff,ou=people,dc=planetexpress,dc=com"
+                      roleIds:
+                      - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+                    autoProvisionNewIdentities: false
+                    minimumRefreshSeconds: 300
+                    bindDn: "cn=admin,dc=planetexpress,dc=com"
+                    bindPassword: "GoodNewsEveryone"
+                  userId: "sysadmin"
+                  password: "password"
+                  server: "primary"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestLdapResponse"
+              examples:
+                testConfig:
+                  summary: "Test LDAP config"
+                  value:
+                    executionMs: 36
+                    connection:
+                      executionMs: 34
+                      serverProperties:
+                        Service Name: "dragoseng.local:ldaptest-svc$@DRAGOSENG.LOCAL"
+                        DNS Host Name: "ldaptest-svc.dragoseng.local"
+                        Supported LDAP Versions: "3, 2"
+                    authentication:
+                      executionMs: 2
+                      userProperties:
+                        DN: "dc=planetexpress,dc=com"
+                        User ID: "sysadmin"
+                        Display Name: "System Administrator"
+                      userRelevantGroupDns:
+                      - "cn=admin,dc=planetexpress,dc=com"
+                      userMappedRoleId:
+                      - "574ea979-57b9-4e5f-ad56-a9d733223db8"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity:
+    get:
+      operationId: "getIdentities"
+      summary: "Get Identities"
+      tags:
+      - "Identities"
+      description: "Returns identities.\n"
+      x-requires-privileges:
+      - "auth:identity:read"
+      parameters:
+      - $ref: "#/components/parameters/PageSizeParameter"
+      - $ref: "#/components/parameters/PageNumberParameter"
+      - in: "query"
+        name: "sorts"
+        schema:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/IdentitySortField"
+      - in: "query"
+        name: "legacyUsernameMatches"
+        schema:
+          type: "string"
+          description: "Case-insensitive, glob-like match for legacy usernames."
+        example: "jsmith"
+      - in: "query"
+        name: "passwordAuthUsernameMatches"
+        schema:
+          type: "string"
+          description: "Case-insensitive, glob-like match for password auth usernames.\
+            \ Must have ‘auth:identity:manage’ permission in order to filter on this\
+            \ field."
+        example: "jsmith"
+      - in: "query"
+        name: "nameMatches"
+        schema:
+          type: "string"
+          description: "Case-insensitive, glob-like match."
+        example: "Smith"
+      - in: "query"
+        name: "scopeContains"
+        schema:
+          type: "string"
+          format: "uuid"
+          description: "Must have ‘auth:identity:manage’ permission in order to filter\
+            \ on this field."
+        example: "00000000-0000-0000-0000-000000000001"
+      - in: "query"
+        name: "boundToAuthProviderId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000001"
+      - in: "query"
+        name: "lastAuthenticatedBefore"
+        schema:
+          type: "string"
+          format: "date-time"
+          description: "Only returns identities that have not authenticated since\
+            \ the provided time"
+        example: "2023-01-02T03:04:05Z"
+      - in: "query"
+        name: "lastAuthenticatedAfter"
+        schema:
+          type: "string"
+          format: "date-time"
+          description: "Only returns identities that have authenticated since the\
+            \ provided time"
+        example: "2023-01-02T03:04:05Z"
+      - in: "query"
+        name: "excludeBuiltInAccounts"
+        schema:
+          type: "boolean"
+          description: "If true, we do not include any builtIn accounts in the response"
+        example: true
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdentityPage"
+              examples:
+                boundToAuthProviderId:
+                  summary: "Bound to auth provider id"
+                  value:
+                    pageNumber: 1
+                    pageSize: 10
+                    totalCount: 2
+                    totalCountExceededLimit: false
+                    totalPages: 1
+                    sorts:
+                    - field: "name"
+                      descending: true
+                    content:
+                    - id: "dd2538be-be27-45f1-98f4-15decbb9aab9"
+                      name: "test"
+                      legacyUsername: "test"
+                      builtIn: false
+                      roles: []
+                      locked: false
+                      authBindings:
+                        apiKey:
+                        - id: "5027447a-0b20-4c42-b9d0-b6410124e4b5"
+                          providerId: "00000000-0000-0000-0000-000000000001"
+                          providerName: "API Keys"
+                          apiKeyId: "CR1sk11C9pH8aXzxzdwPQA=="
+                          name: "test"
+                        ldap: []
+                        oidc: []
+                        password: []
+                    - id: "00000000-0000-0000-0000-000000000002"
+                      name: "DragOS CLI"
+                      legacyUsername: "cli"
+                      builtIn: true
+                      roles:
+                      - id: "00000000-0000-0000-0000-000000000001"
+                        name: "Administrator"
+                        builtIn: true
+                        permissions: []
+                      locked: false
+                      authBindings:
+                        apiKey:
+                        - id: "8f7a78e5-68f3-4b59-8055-c9c7395b6a57"
+                          providerId: "00000000-0000-0000-0000-000000000001"
+                          providerName: "API Keys"
+                          apiKeyId: "xc2O/qXx1xch0vKtOglRiA=="
+                          name: "CLI Key"
+                        ldap: []
+                        oidc: []
+                        password: []
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    post:
+      operationId: "createIdentity"
+      summary: "Create New Identity"
+      tags:
+      - "Identities"
+      description: "Creates a new identity.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdentityCreate"
+            examples:
+              createIdentity:
+                summary: "Create identity"
+                value:
+                  name: "Bob Smith"
+                  roleIds:
+                  - "1848db64-374c-4936-ad9d-b0933c186cff"
+                  locked: true
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Identity"
+              examples:
+                createIdentity:
+                  summary: "Create identity"
+                  value:
+                    id: "918046d7-d723-4b29-8abc-e7440e12f28b"
+                    name: "Bob Smith"
+                    legacyUsername: "bsmith"
+                    builtIn: false
+                    roles:
+                    - id: "1848db64-374c-4936-ad9d-b0933c186cff"
+                      name: "Some Role"
+                      builtIn: false
+                      permissions:
+                      - id: "some:privilege"
+                        scopeable: false
+                    locked: true
+                    authBindings:
+                      apiKey: []
+                      ldap: []
+                      oidc: []
+                      password: []
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity/{idOrMe}:
+    get:
+      operationId: "getIdentity"
+      summary: "Get Identity"
+      tags:
+      - "Identities"
+      description: "Returns a identity.\n"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "d1e5e725-afb4-46eb-a78e-266ed8c15c44"
+        required: true
+      - in: "query"
+        name: "omitPrivilegesNotForAuthProviderId"
+        description: "If specified, privileges granted from roles mapped to other\
+          \ auth providers are omitted and instead placed in the omittedPrivileges\
+          \ field in the identity response.\nIf idOrMe is 'me' and this parameter\
+          \ is unspecified, it will default to the current auth token's auth provider\
+          \ ID.\n"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "d20670ca-5b14-4e81-ac3d-6d22a322e7d6"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Identity"
+              examples:
+                getIdentity:
+                  summary: "Get identity"
+                  value:
+                    id: "d1e5e725-afb4-46eb-a78e-266ed8c15c44"
+                    name: "Jane Smith"
+                    legacyUsername: "jsmith"
+                    builtIn: false
+                    roles:
+                    - id: "00000000-0000-0000-0000-000000000001"
+                      name: "Administrator"
+                      builtIn: true
+                      permissions: []
+                    - id: "00000000-0000-0000-0000-000000000002"
+                      name: "User"
+                      builtIn: true
+                      permissions:
+                      - id: "some:privilege"
+                        scopeable: false
+                    locked: true
+                    authBindings:
+                      apiKey: []
+                      ldap: []
+                      oidc: []
+                      password: []
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    put:
+      operationId: "updateIdentity"
+      summary: "Update Identity"
+      tags:
+      - "Identities"
+      description: "Updates an existing identity.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "d1e5e725-afb4-46eb-a78e-266ed8c15c44"
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdentityUpdate"
+            examples:
+              updateIdentity:
+                summary: "Update identity"
+                value:
+                  name: "Janet Smith"
+                  roleIds:
+                  - "00000000-0000-0000-0000-000000000002"
+                  locked: false
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Identity"
+              examples:
+                updateIdentity:
+                  summary: "Update identity"
+                  value:
+                    id: "d1e5e725-afb4-46eb-a78e-266ed8c15c44"
+                    name: "Janet Smith"
+                    legacyUsername: "jsmith"
+                    builtIn: false
+                    roles:
+                    - id: "00000000-0000-0000-0000-000000000002"
+                      name: "User"
+                      builtIn: true
+                      permissions:
+                      - id: "some:privilege"
+                        scopeable: false
+                    locked: false
+                    authBindings:
+                      apiKey: []
+                      ldap: []
+                      oidc: []
+                      password: []
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    delete:
+      operationId: "deleteIdentity"
+      summary: "Delete Identity"
+      tags:
+      - "Identities"
+      description: "Deletes an existing identity.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "d1e5e725-afb4-46eb-a78e-266ed8c15c44"
+        required: true
+      responses:
+        "200":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity/{idOrMe}/apikey:
+    post:
+      operationId: "createApiKey"
+      summary: "Create API Key"
+      tags:
+      - "Identities"
+      description: "Creates a new API key for an identity.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "7089be8b-dcc8-4234-a9d2-bd061fe58a68"
+        required: true
+      - in: "query"
+        name: "providerId"
+        description: "If not included, \"built-in\" password provider is inferred"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateApiKey"
+            examples:
+              createApiKey:
+                summary: "Create API key"
+                value:
+                  name: "assets"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyIdentityAuthBinding"
+              examples:
+                createApiKey:
+                  summary: "Create API key"
+                  value:
+                    id: "c1a08351-8278-4c9c-abf8-f7146f8674ce"
+                    providerId: "00000000-0000-0000-0000-000000000001"
+                    providerName: "API Keys"
+                    apiKeyId: "_1aIKrtUWo2vcwZApGnYRw=="
+                    apiKeySecret: "lfRRH8xD3XrkBWJyKEglOIF3kmgS4bM33AwUkP_rtgfyNT1bu534AX7T_0tX5Q98Dg61NeupnELIh1qcHUYCOw=="
+                    name: "assets"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity/{idOrMe}/apikey/{bindingId}:
+    put:
+      operationId: "updateApiKey"
+      summary: "Update API Key"
+      tags:
+      - "Identities"
+      description: "Updates an existing API key for an identity.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "7089be8b-dcc8-4234-a9d2-bd061fe58a68"
+        required: true
+      - in: "path"
+        name: "bindingId"
+        description: "ID of binding to update"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "c1a08351-8278-4c9c-abf8-f7146f8674ce"
+        required: true
+      - in: "query"
+        name: "providerId"
+        description: "If not included, \"built-in\" password provider is inferred"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiKeyIdentityAuthBindingUpdate"
+            examples:
+              updateApiKey:
+                summary: "Update API key"
+                value:
+                  name: "analytics"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyIdentityAuthBinding"
+              examples:
+                updateApiKey:
+                  summary: "Update API key"
+                  value:
+                    id: "c1a08351-8278-4c9c-abf8-f7146f8674ce"
+                    providerId: "00000000-0000-0000-0000-000000000001"
+                    providerName: "API Keys"
+                    apiKeyId: "_1aIKrtUWo2vcwZApGnYRw=="
+                    name: "analytics"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    delete:
+      operationId: "deleteApiKey"
+      summary: "Delete API Key"
+      tags:
+      - "Identities"
+      description: "Deletes an identity's API key binding.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "7089be8b-dcc8-4234-a9d2-bd061fe58a68"
+        required: true
+      - in: "path"
+        name: "bindingId"
+        description: "ID of binding to delete"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "c1a08351-8278-4c9c-abf8-f7146f8674ce"
+        required: true
+      - in: "query"
+        name: "providerId"
+        description: "If not included, \"built-in\" password provider is inferred"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000001"
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity/{idOrMe}/ldap:
+    put:
+      operationId: "associateLdapUserId"
+      summary: "Associate LDAP User ID"
+      tags:
+      - "Identities"
+      description: "Associates a user ID to an identity for an LDAP provider.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "c1a08351-8278-4c9c-abf8-f7146f8674ce"
+        required: true
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "56d28b90-ab98-477a-aa83-8c9b6ad6d621"
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssociateLdapUserId"
+            examples:
+              associateLdapBinding:
+                summary: "Associate LDAP binding"
+                value:
+                  userId: "bsmith"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LdapIdentityAuthBinding"
+              examples:
+                associateLdapBinding:
+                  summary: "Associate LDAP binding"
+                  value:
+                    id: "2f77a540-e4cf-4860-af3f-8ae2fcecf745"
+                    providerId: "56d28b90-ab98-477a-aa83-8c9b6ad6d621"
+                    providerName: "ACME LDAP"
+                    userId: "bsmith"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    delete:
+      operationId: "disassociateLdapUserId"
+      summary: "Disassociate LDAP User ID"
+      tags:
+      - "Identities"
+      description: "Disassociates a user ID from an identity for an LDAP provider.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "2f77a540-e4cf-4860-af3f-8ae2fcecf745"
+        required: true
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "56d28b90-ab98-477a-aa83-8c9b6ad6d621"
+        required: true
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity/{idOrMe}/oidc:
+    put:
+      operationId: "associateOidcSubject"
+      summary: "Associate OIDC Subject"
+      tags:
+      - "Identities"
+      description: "Associates a subject to an identity for an OIDC provider.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "7089be8b-dcc8-4234-a9d2-bd061fe58a68"
+        required: true
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "44197a79-762d-4e5b-9e5e-a77fbd301896"
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssociateOidcSubject"
+            examples:
+              createOidcBinding:
+                summary: "Associate OIDC binding"
+                value:
+                  subject: "80996702-d81b-4426-80fe-22f63dbab192"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OidcIdentityAuthBinding"
+              examples:
+                createOidcBinding:
+                  summary: "Associate OIDC binding"
+                  value:
+                    id: "51a4edc2-12cc-4e77-b744-5bb392af74e5"
+                    providerId: "44197a79-762d-4e5b-9e5e-a77fbd301896"
+                    providerName: "Google OIDC"
+                    subject: "80996702-d81b-4426-80fe-22f63dbab192"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    delete:
+      operationId: "disassociateOidcSubject"
+      summary: "Disassociate OIDC Subject"
+      tags:
+      - "Identities"
+      description: "Disassociates a subject from an identity for an OIDC provider.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "7089be8b-dcc8-4234-a9d2-bd061fe58a68"
+        required: true
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "44197a79-762d-4e5b-9e5e-a77fbd301896"
+        required: true
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity/{idOrMe}/password:
+    put:
+      operationId: "setTemporaryPassword"
+      summary: "Set Temporary Password"
+      tags:
+      - "Identities"
+      description: "Sets an identity's password as temporary and must be reset via\
+        \ the Auth API before using to authenticate.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "7089be8b-dcc8-4234-a9d2-bd061fe58a68"
+        required: true
+      - in: "query"
+        name: "providerId"
+        description: "If not included, \"built-in\" password provider is inferred"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000002"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TemporaryPassword"
+            examples:
+              temporaryPassword:
+                summary: "Temporary password"
+                value:
+                  username: "sysadmin"
+                  password: "changeme"
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity (due to identity was \"built-in\")"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    delete:
+      operationId: "deletePasswordBinding"
+      summary: "Delete Password Binding"
+      tags:
+      - "Identities"
+      description: "Deletes an identity's password auth binding.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "7089be8b-dcc8-4234-a9d2-bd061fe58a68"
+        required: true
+      - in: "query"
+        name: "providerId"
+        description: "If not included, \"built-in\" password provider is inferred"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000002"
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity (due to identity was \"built-in\")"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/identity/{idOrMe}/password/resetLockout:
+    post:
+      operationId: "resetPasswordLockout"
+      summary: "Reset password failures lockout"
+      tags:
+      - "Identities"
+      description: "Removes temporary lock on Identity arising from password attempt\
+        \ failures\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      parameters:
+      - in: "path"
+        name: "idOrMe"
+        schema:
+          type: "string"
+          description: "Identity ID or 'me'"
+        example: "00000000-0000-0000-0000-000000000001"
+        required: true
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000002"
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/jwks:
+    get:
+      operationId: "jwks"
+      summary: "Get JWKS"
+      tags:
+      - "JWT"
+      description: "Fetches the configured JWKS\n"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Jwks"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    keys:
+                    - kid: "example"
+                      kty: "RSA"
+                      use: "example"
+                      alg: "example"
+                      "n": "example"
+                      e: "example"
+  /api/v1/login/app:
+    post:
+      operationId: "loginApp"
+      summary: "Login With App Secret"
+      tags:
+      - "Login"
+      description: "Attempts to login using app secret and return an application auth\
+        \ token.\n"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginApp"
+            examples:
+              appLogin:
+                description: "App login"
+                value:
+                  appId: "notification-service"
+                  appSecret: "a92m45bvi58f7sj4n235hjvhse76r451knsdg05y235"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccess"
+              examples:
+                success:
+                  description: "Success"
+                  value:
+                    authToken: "eyJhbGciOiJIUzI1Ni..."
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Login failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/login/ldap:
+    post:
+      operationId: "loginLdap"
+      summary: "Login With LDAP Authentication Provider"
+      tags:
+      - "Login"
+      description: "Attempts to login using an LDAP authentication provider.\n"
+      parameters:
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "80b4f5e1-03df-43ef-9a02-8c6efc97d9c4"
+        required: true
+        description: "ID of the configured LDAP provider."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginLdap"
+            examples:
+              ldapLogin:
+                description: "LDAP login"
+                value:
+                  username: "professor"
+                  password: "password"
+      responses:
+        "200":
+          description: "Success"
+          headers:
+            Set-Cookie:
+              schema:
+                type: "string"
+              examples:
+                authToken:
+                  description: "dragos-auth-token"
+                  value: "dragos-auth-token=<encoded JWT>"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccess"
+              examples:
+                success:
+                  description: "Success"
+                  value:
+                    authToken: "eyJhbGciOiJIUzI1Ni..."
+                    refreshToken: "siFt5GciOiJIUzI3dg..."
+                    identity:
+                      id: "8da402f2-2764-482e-b0d8-e2dc850811b5"
+                      name: "Professor"
+                      legacyUsername: "professor"
+                      builtIn: false
+                      roles:
+                      - id: "00000000-0000-0000-0000-000000000001"
+                        name: "Administrator"
+                        builtIn: true
+                        permissions: []
+                      - id: "00000000-0000-0000-0000-000000000002"
+                        name: "User"
+                        builtIn: true
+                        permissions:
+                        - id: "some:privilege"
+                          scopeable: false
+                      scope:
+                      - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+                      locked: true
+                      authBindings:
+                        apiKey: []
+                        ldap: []
+                        oidc: []
+                        password: []
+                      privileges:
+                      - permissionExpressions:
+                        - "some:privilege"
+                        scope:
+                        - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Login failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Login failed due to the identity having no roles"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Unknown Auth Provider"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/login/oidc:
+    post:
+      operationId: "loginOidc"
+      summary: "Login With OIDC Authentication Provider"
+      tags:
+      - "Login"
+      description: "Redirects to an OIDC authentication provider's login page.\n"
+      parameters:
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "56d28b90-ab98-477a-aa83-8c9b6ad6d621"
+        required: true
+        description: "ID of the configured OIDC provider."
+      responses:
+        "200":
+          description: "Success"
+          headers:
+            Set-Cookie:
+              schema:
+                type: "string"
+              examples:
+                authContext:
+                  description: "oidc-auth-context"
+                  value: "oidc-auth-context=<encoded OIDC context info>"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OidcContext"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    providerId: "example"
+                    url: "example"
+                    redirectUri: "example"
+                    state: "example"
+                    nonce: "example"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Unknown Auth Provider"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/login/oidc/code:
+    post:
+      operationId: "loginOidcCode"
+      summary: "Login With OIDC Authentication Provider Callback"
+      tags:
+      - "Login"
+      description: "Attempts to complete the OIDC authentication process using an\
+        \ OIDC authentication provider.\n"
+      parameters:
+      - in: "cookie"
+        name: "oidc-auth-context"
+        schema:
+          type: "string"
+        description: "OIDC login context info set by the response from /login/oidc."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OidcCode"
+            examples:
+              oidcCodeLogin:
+                description: "OIDC Code Login"
+                value:
+                  code: "SplxlOBeZQQYbYS6WxSbIA"
+                  state: "af0ifjsldkj"
+      responses:
+        "200":
+          description: "Success"
+          headers:
+            Set-Cookie:
+              schema:
+                type: "string"
+              examples:
+                authToken:
+                  description: "dragos-auth-token"
+                  value: "dragos-auth-token=<encoded JWT>"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccess"
+              examples:
+                success:
+                  description: "Success"
+                  value:
+                    authToken: "eyJhbGciOiJIUzI1Ni..."
+                    refreshToken: "siFt5GciOiJIUzI3dg..."
+                    identity:
+                      id: "8da402f2-2764-482e-b0d8-e2dc850811b5"
+                      name: "Professor"
+                      legacyUsername: "professor"
+                      builtIn: false
+                      roles:
+                      - id: "00000000-0000-0000-0000-000000000001"
+                        name: "Administrator"
+                        builtIn: true
+                        permissions: []
+                      - id: "00000000-0000-0000-0000-000000000002"
+                        name: "User"
+                        builtIn: true
+                        permissions:
+                        - id: "some:privilege"
+                          scopeable: false
+                      scope:
+                      - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+                      locked: true
+                      authBindings:
+                        apiKey: []
+                        ldap: []
+                        oidc: []
+                        password: []
+                      privileges:
+                      - permissionExpressions:
+                        - "some:privilege"
+                        scope:
+                        - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Login failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Login failed due to the identity having no roles"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Unknown Auth Provider"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/login/password:
+    post:
+      operationId: "loginPassword"
+      summary: "Login With Password Authentication Provider"
+      tags:
+      - "Login"
+      description: "Attempts to login using a password authentication provider.\n"
+      parameters:
+      - in: "query"
+        name: "providerId"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "00000000-0000-0000-0000-000000000002"
+        required: false
+        description: "ID of the configured password provider. Defaults to builtin\
+          \ password provider."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginPassword"
+            examples:
+              passwordLogin:
+                description: "Password login"
+                value:
+                  username: "sysadmin"
+                  password: "password"
+      responses:
+        "200":
+          description: "Success"
+          headers:
+            Set-Cookie:
+              schema:
+                type: "string"
+              examples:
+                authToken:
+                  description: "dragos-auth-token"
+                  value: "dragos-auth-token=<encoded JWT>"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccess"
+              examples:
+                success:
+                  description: "Success"
+                  value:
+                    authToken: "eyJhbGciOiJIUzI1Ni..."
+                    refreshToken: "siFt5GciOiJIUzI3dg..."
+                    identity:
+                      id: "8da402f2-2764-482e-b0d8-e2dc850811b5"
+                      name: "Professor"
+                      legacyUsername: "professor"
+                      builtIn: false
+                      roles:
+                      - id: "00000000-0000-0000-0000-000000000001"
+                        name: "Administrator"
+                        builtIn: true
+                        permissions: []
+                      - id: "00000000-0000-0000-0000-000000000002"
+                        name: "User"
+                        builtIn: true
+                        permissions:
+                        - id: "some:privilege"
+                          scopeable: false
+                      scope:
+                      - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+                      locked: true
+                      authBindings:
+                        apiKey: []
+                        ldap: []
+                        oidc: []
+                        password: []
+                      privileges:
+                      - permissionExpressions:
+                        - "some:privilege"
+                        scope:
+                        - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Login failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Login failed due to the identity having no roles"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Unknown Auth Provider"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/login/refresh:
+    post:
+      operationId: "loginRefresh"
+      summary: "Login With Refresh Token"
+      tags:
+      - "Login"
+      description: "Attempts to login using a previously issued refresh token and\
+        \ returns an application auth and refresh token.\n"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRefresh"
+            examples:
+              refreshLogin:
+                description: "Refresh token login"
+                value:
+                  refreshToken: "siFt5GciOiJIUzI3dg..."
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccess"
+              examples:
+                success:
+                  description: "Success"
+                  value:
+                    authToken: "eyJhbGciOiJIUzI1Ni..."
+                    refreshToken: "d73kfciOiJIUzY6x3..."
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Login failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Login failed due to the identity having no roles"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginError"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/logout:
+    post:
+      operationId: "logout"
+      summary: "Logout"
+      description: "Logout and revoke auth token.\n"
+      tags:
+      - "Logout"
+      responses:
+        "200":
+          description: "Success"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/permission:
+    get:
+      operationId: "getPermissions"
+      summary: "Get Permissions"
+      tags:
+      - "Permission"
+      description: "Returns permissions.\n"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Permission"
+              examples:
+                get:
+                  summary: "Get permissions"
+                  value:
+                  - id: "admin"
+                    description: "Allow usage of various admin pages and services."
+                    scopeable: false
+                  - id: "misc:jupyterhub"
+                    description: "Allows logging in to the Jupyterhub environment."
+                    scopeable: false
+  /api/v1/role:
+    get:
+      operationId: "getRoles"
+      summary: "Get Roles"
+      tags:
+      - "Roles"
+      description: "Returns roles.\n"
+      parameters:
+      - $ref: "#/components/parameters/PageSizeParameter"
+      - $ref: "#/components/parameters/PageNumberParameter"
+      - in: "query"
+        name: "sorts"
+        schema:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AuthProviderSortField"
+      - in: "query"
+        name: "nameMatches"
+        schema:
+          type: "string"
+          description: "Case-insensitive, glob-like match."
+        example: "administrator"
+      - in: "query"
+        name: "builtIn"
+        schema:
+          type: "boolean"
+        example: true
+      - in: "query"
+        name: "containsPermissionId"
+        schema:
+          type: "string"
+        example: "auth:role:manage"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolePage"
+              examples:
+                allRolesContainsPrivilegeId:
+                  summary: "Get all roles that contains a privilege id"
+                  value:
+                    pageNumber: 1
+                    pageSize: 10
+                    totalCount: 1
+                    totalCountExceededLimit: false
+                    totalPages: 1
+                    sorts:
+                    - field: "name"
+                      descending: true
+                    content:
+                    - id: "00000000-0000-0000-0000-000000000001"
+                      description: "Super-administrators with all privileges."
+                      name: "Administrator"
+                      builtIn: true
+                      permissions:
+                      - id: "admin"
+                        scopeable: false
+                      - id: "analytic:beta:read"
+                        scopeable: false
+                      - id: "analytic:manage"
+                        scopeable: false
+                      - id: "auth:role:manage"
+                        scopeable: false
+                      - id: "notification:update"
+                        scopeable: true
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    post:
+      operationId: "createRole"
+      summary: "Create Role"
+      tags:
+      - "Roles"
+      description: "Creates a new role.\n"
+      x-requires-privileges:
+      - "auth:role:manage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleCreate"
+            examples:
+              createRole:
+                description: "Create role"
+                value:
+                  name: "notifications"
+                  description: "Notifications administrator"
+                  permissionIds:
+                  - "notification:create"
+                  - "notification:read"
+                  - "notification:update"
+                  - "notification:rule:read"
+                  - "notification:rule:manage"
+                  - "notification:system:read"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+              examples:
+                createRole:
+                  description: "Create role"
+                  value:
+                    id: "984eb65b-9d0d-4f9a-a8cf-1edaa50fcc46"
+                    name: "notifications"
+                    description: "Notifications administrator"
+                    builtIn: false
+                    permissions:
+                    - id: "notification:create"
+                      scopeable: true
+                    - id: "notification:read"
+                      scopeable: true
+                    - id: "notification:update"
+                      scopeable: true
+                    - id: "notification:rule:read"
+                      scopeable: false
+                    - id: "notification:rule:manage"
+                      scopeable: false
+                    - id: "notification:system:read"
+                      scopeable: true
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/role/{id}:
+    get:
+      operationId: "getRole"
+      summary: "Get Role"
+      tags:
+      - "Roles"
+      description: "Returns a role.\n"
+      parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "c3ab6dca-e65a-4abe-8614-df319a66e9af"
+        required: true
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+              examples:
+                getRole:
+                  description: "Get role"
+                  value:
+                    id: "c3ab6dca-e65a-4abe-8614-df319a66e9af"
+                    name: "analytics"
+                    description: "Analytics administrator"
+                    builtIn: false
+                    permissions:
+                    - id: "analytic:manage"
+                      scopeable: false
+                    - id: "analytic:read"
+                      scopeable: false
+                    - id: "analytic:beta:read"
+                      scopeable: false
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    put:
+      operationId: "updateRole"
+      summary: "Update Role"
+      tags:
+      - "Roles"
+      description: "Updates an existing role.\n"
+      x-requires-privileges:
+      - "auth:role:manage"
+      parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "c3ab6dca-e65a-4abe-8614-df319a66e9af"
+        required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleUpdate"
+            examples:
+              updateRole:
+                description: "Update role"
+                value:
+                  name: "assets analytics"
+                  description: "Assets and analytics administrator"
+                  permissionIds:
+                  - "asset:delete"
+                  - "asset:map"
+                  - "asset:read"
+                  - "asset:write"
+                  - "analytic:manage"
+                  - "analytic:read"
+                  - "analytic:beta:read"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+              examples:
+                updateRole:
+                  description: "Update role"
+                  value:
+                    id: "c3ab6dca-e65a-4abe-8614-df319a66e9af"
+                    name: "assets analytics"
+                    description: "Assets and analytics administrator"
+                    builtIn: false
+                    permissions:
+                    - id: "asset:delete"
+                      scopeable: true
+                    - id: "asset:map"
+                      scopeable: false
+                    - id: "asset:read"
+                      scopeable: true
+                    - id: "asset:write"
+                      scopeable: true
+                    - id: "analytic:manage"
+                      scopeable: false
+                    - id: "analytic:read"
+                      scopeable: false
+                    - id: "analytic:beta:read"
+                      scopeable: false
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+    delete:
+      operationId: "deleteRole"
+      summary: "Delete Role"
+      tags:
+      - "Roles"
+      description: "Deletes an existing role.\n"
+      x-requires-privileges:
+      - "auth:role:manage"
+      parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+          format: "uuid"
+        example: "c3ab6dca-e65a-4abe-8614-df319a66e9af"
+        required: true
+      responses:
+        "200":
+          description: "Success"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "422":
+          description: "Unprocessable entity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/util/fetchServerCert:
+    post:
+      operationId: "fetchServerCert"
+      summary: "Fetch Server Cert"
+      tags:
+      - "Util"
+      description: "Fetches an server's certificate and returns in PEM format\n"
+      x-manual-respond: true
+      x-requires-privileges:
+      - "auth:provider:manage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FetchServerCert"
+            examples:
+              fetchCert:
+                description: "Fetch cert"
+                value:
+                  host: "ldap.acme.com"
+                  port: 636
+      responses:
+        "200":
+          description: "Success"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+                description: "Server's certificate in PEM format"
+              examples:
+                fetchCert:
+                  description: "Fetch cert"
+                  value: "-----BEGIN CERTIFICATE-----MIIEoTCCAomgAwIBAgIBATANBgk-----END\
+                    \ CERTIFICATE-----"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "503":
+          description: "Error while attempting to fetch certificate"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/util/permissionsPreview:
+    post:
+      operationId: "getPermissionsPreview"
+      summary: "Get Permissions Preview"
+      tags:
+      - "Util"
+      description: "Returns permissions given roles and a scope.\n"
+      x-requires-privileges:
+      - "auth:identity:manage"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PermissionsPreviewRequest"
+            examples:
+              generated:
+                summary: "Auto-generated example"
+                value:
+                  roleIds:
+                  - "example"
+                  scope:
+                  - "example"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermissionsPreviewResponse"
+              examples:
+                simple:
+                  summary: "Get Permissions Preview"
+                  value:
+                    privileges:
+                    - permissionExpressions:
+                      - "some:privilege"
+                      - "another:privilege"
+                      scope:
+                      - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+                      - "d1e5e725-afb4-46eb-a78e-266ed8c15c44"
+                    omittedPrivileges:
+                    - reason: "not allowed"
+                      permissionExpressions:
+                      - "omitted:privilege"
+                      scope:
+                      - "6a2a8708-6a11-4c98-94bd-90445daadd4f"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "404":
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+  /api/v1/verify:
+    get:
+      operationId: "verifyAccess"
+      summary: "Verify Access"
+      description: "Takes standard authentication (JWT Bearer or API Key header) or\
+        \ 'dragos-auth-token' cookie, resolves identity,\nverifies requirements from\
+        \ query parameters, and returns legacy auth headers.\n\nThis endpoint is to\
+        \ facilitate sub-request authentication checks from reverse proxies like Nginx.\n"
+      tags:
+      - "Verification"
+      parameters:
+      - in: "cookie"
+        name: "dragos-auth-token"
+        schema:
+          type: "string"
+        description: "If specified, must be a signed JWT auth token. Ignored if 'allowAuthTokenCookie'\
+          \ query parameter is\nfalse (default) or 'Authorization' header is passed.\n"
+      - in: "query"
+        name: "ignoreApiKeys"
+        schema:
+          type: "boolean"
+          default: false
+        required: true
+        description: "If true, API key authentication will be ignored.\n"
+      - in: "query"
+        name: "requireAuthentication"
+        schema:
+          type: "boolean"
+          default: false
+        required: true
+        description: "If true, a 401 will be returned if no authentication is passed.\
+          \ If false, lack of authentication will still\nreturn a 200, but without\
+          \ an ID token\n"
+      - in: "query"
+        name: "allowAuthTokenCookie"
+        schema:
+          type: "boolean"
+          default: false
+        required: true
+        description: "Allows passing of JWT auth token by cookie.\n"
+      - in: "query"
+        name: "requirePermissions"
+        schema:
+          type: "array"
+          items:
+            type: "string"
+        description: "If set, a 403 will be returned if the authenticated identity\
+          \ lacks any of these permissions. If at least one\nset, authentication is\
+          \ required, even if 'requireAuthentication' is false.\n"
+      responses:
+        "200":
+          description: "Success"
+          headers:
+            X-Identity-Id:
+              schema:
+                type: "string"
+              description: "Legacy header for authentication identity ID. Only present\
+                \ if authenticated."
+              required: false
+            X-Username:
+              schema:
+                type: "string"
+              description: "Legacy header for authentication identity legacy username\
+                \ or ID. Only present if authenticated."
+              required: false
+            X-Roles:
+              schema:
+                type: "string"
+              description: "Legacy header for authentication identity role IDs. Only\
+                \ present if authenticated."
+              required: false
+            X-Privileges:
+              schema:
+                type: "string"
+              description: "Legacy header for authentication identity permissions.\
+                \ Only present if authenticated."
+              required: false
+            X-Dragos-Auth-Token:
+              schema:
+                type: "string"
+              description: "The JWT auth token used to authenticate against this endpoint.\
+                \ Header only applies for JWT auth."
+              required: false
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "401":
+          description: "Unauthenticated (and authentication was required)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+        "403":
+          description: "Authenticated identity was missing at least one of privileges\
+            \ specified in 'requirePrivilege'"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    callId: "example"
+                    startTime: "example"
+                    durationMs: 0
+                    error:
+                      id: "example"
+                      parameters: {}
+                    statusCode: 0
+                    message: "example"
+components:
+  parameters:
+    PageNumberParameter:
+      in: "query"
+      name: "pageNumber"
+      schema:
+        type: "integer"
+        format: "int64"
+        description: "1-based indexing"
+        minimum: 1
+        default: 1
+      example: 3
+    PageSizeParameter:
+      in: "query"
+      name: "pageSize"
+      schema:
+        type: "integer"
+        format: "int64"
+        minimum: 1
+        maximum: 1000
+        default: 10
+      example: 5
+  schemas:
+    ApiKeyAuthProviderConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderConfig"
+      - type: "object"
+        properties:
+          enabledForNonBuiltInIdentities:
+            type: "boolean"
+            description: "If false, authentication using non-built-in identity API\
+              \ keys will fail."
+        required:
+        - "enabledForNonBuiltInIdentities"
+    ApiKeyAuthProviderPublicConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderPublicConfig"
+      - type: "object"
+        description: "Public config of API Key auth provider"
+    ApiKeyIdentityAuthBinding:
+      allOf:
+      - $ref: "#/components/schemas/IdentityAuthBinding"
+      - type: "object"
+        properties:
+          apiKeyId:
+            type: "string"
+          apiKeySecret:
+            type: "string"
+            description: "Only populated on generation responses"
+          name:
+            type: "string"
+        required:
+        - "apiKeyId"
+        - "name"
+    ApiKeyIdentityAuthBindingUpdate:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+    AssociateLdapUserId:
+      type: "object"
+      properties:
+        userId:
+          type: "string"
+      required:
+      - "userId"
+    AssociateOidcSubject:
+      type: "object"
+      properties:
+        subject:
+          type: "string"
+      required:
+      - "subject"
+    AuthProvider:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        builtIn:
+          type: "boolean"
+          description: "Returns 'true' if authentication provider is built-in."
+        publicConfig:
+          $ref: "#/components/schemas/AuthProviderPublicConfig"
+        config:
+          $ref: "#/components/schemas/AuthProviderConfig"
+      required:
+      - "id"
+      - "name"
+      - "builtIn"
+      - "publicConfig"
+    AuthProviderConfig:
+      type: "object"
+      properties:
+        type:
+          $ref: "#/components/schemas/AuthProviderConfigType"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          apikey: "#/components/schemas/ApiKeyAuthProviderConfig"
+          ldap: "#/components/schemas/LdapAuthProviderConfig"
+          oidc: "#/components/schemas/OidcAuthProviderConfig"
+          password: "#/components/schemas/PasswordAuthProviderConfig"
+      required:
+      - "type"
+    AuthProviderConfigType:
+      type: "string"
+      enum:
+      - "apikey"
+      - "ldap"
+      - "oidc"
+      - "password"
+    AuthProviderCreate:
+      type: "object"
+      description: "The value of provider's existing 'type' determines which of the\
+        \ config fields will be expected. Ex. if type is 'oidc', 'oidcConfig' will\
+        \ be expected."
+      properties:
+        name:
+          type: "string"
+        config:
+          $ref: "#/components/schemas/AuthProviderConfig"
+      required:
+      - "name"
+      - "config"
+    AuthProviderPage:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - type: "object"
+        properties:
+          sorts:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AuthProviderSort"
+          content:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AuthProvider"
+        required:
+        - "content"
+    AuthProviderPublicConfig:
+      type: "object"
+      properties:
+        type:
+          $ref: "#/components/schemas/AuthProviderConfigType"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          apikey: "#/components/schemas/ApiKeyAuthProviderPublicConfig"
+          ldap: "#/components/schemas/LdapAuthProviderPublicConfig"
+          oidc: "#/components/schemas/OidcAuthProviderPublicConfig"
+          password: "#/components/schemas/PasswordAuthProviderPublicConfig"
+      required:
+      - "type"
+    AuthProviderSort:
+      type: "object"
+      description: "Sorting criteria for auth providers."
+      properties:
+        field:
+          $ref: "#/components/schemas/AuthProviderSortField"
+        descending:
+          type: "boolean"
+      required:
+      - "field"
+      - "descending"
+    AuthProviderSortField:
+      type: "string"
+      description: "Valid options are 'name'. Add ':d' to end to denote descending\
+        \ order."
+      example: "name:d"
+    AuthProviderUpdate:
+      type: "object"
+      description: "The value of provider's existing 'type' determines which of the\
+        \ config fields will be expected. Ex. if type is 'oidc', 'oidcConfig' will\
+        \ be expected."
+      properties:
+        name:
+          type: "string"
+        minimumRefreshSeconds:
+          type: "integer"
+          description: "Number of seconds after which the next request verification\
+            \ will refresh access checks"
+        config:
+          $ref: "#/components/schemas/AuthProviderConfig"
+      required:
+      - "config"
+    AzureAdOidcAuthProviderConfigParameters:
+      allOf:
+      - $ref: "#/components/schemas/OidcAuthProviderConfigParameters"
+      - type: "object"
+        properties:
+          rolesByGroup:
+            type: "array"
+            description: "IDs of roles to assign to identities with matching group\
+              \ ID on this provider."
+            items:
+              type: "object"
+              properties:
+                groupId:
+                  type: "string"
+                roleIds:
+                  type: "array"
+                  items:
+                    type: "string"
+                    format: "uuid"
+              required:
+              - "groupId"
+              - "roleIds"
+          rolesByAppRole:
+            type: "array"
+            description: "IDs of roles to assign to identities with matching AppRole\
+              \ ID on this provider."
+            items:
+              type: "object"
+              properties:
+                appRoleId:
+                  type: "string"
+                roleIds:
+                  type: "array"
+                  items:
+                    type: "string"
+                    format: "uuid"
+              required:
+              - "appRoleId"
+              - "roleIds"
+        required:
+        - "rolesByGroup"
+        - "rolesByAppRole"
+    EcJwk:
+      allOf:
+      - $ref: "#/components/schemas/Jwk"
+      - type: "object"
+        properties:
+          alg:
+            type: "string"
+            enum:
+            - "ES256"
+            - "ES384"
+            - "ES512"
+          crv:
+            type: "string"
+            enum:
+            - "P-256"
+            - "P-384"
+            - "P-521"
+          x:
+            type: "string"
+          "y":
+            type: "string"
+        required:
+        - "crv"
+        - "x"
+        - "y"
+    Error:
+      type: "object"
+      properties:
+        callId:
+          type: "string"
+        startTime:
+          type: "string"
+          format: "date-time"
+        durationMs:
+          type: "integer"
+          format: "int64"
+        error:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+            parameters:
+              type: "object"
+              additionalProperties: {}
+          required:
+          - "id"
+        statusCode:
+          type: "integer"
+        message:
+          type: "string"
+      required:
+      - "callId"
+      - "startTime"
+      - "durationMs"
+      - "statusCode"
+      - "message"
+    FetchServerCert:
+      type: "object"
+      properties:
+        host:
+          type: "string"
+          description: "Server's hostname or IP."
+        port:
+          type: "integer"
+          description: "Server's port."
+      required:
+      - "host"
+      - "port"
+    GenerateApiKey:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+      required:
+      - "name"
+    GenericOidcAuthProviderConfigParameters:
+      allOf:
+      - $ref: "#/components/schemas/OidcAuthProviderConfigParameters"
+      - type: "object"
+        properties:
+          additionalScopes:
+            type: "array"
+            description: "Scopes to request in addition to `openid`."
+            items:
+              type: "string"
+              example: "profile"
+          userDisplayNameClaim:
+            type: "string"
+            description: "Name of claim containing human name when provisioning a\
+              \ new Platform user."
+            example: "name"
+          subjectClaim:
+            type: "string"
+            description: "The machine-readable name of the claim from the OIDC provider's\
+              \ identity document that IDP should reference when matching incoming\
+              \ identity documents against existing authentication bindings.\n"
+            example: "sub"
+          subjectClaimLabel:
+            type: "string"
+            description: "A human-readable label for this provider's subject claim\
+              \ for display in user admin UI when displaying an existing authentication\
+              \ binding or manually creating a new authentication binding. Pick something\
+              \ that users viewing the user admin page will understand.\n"
+            example: "User ID"
+          rolesByClaim:
+            type: "array"
+            description: "IDs of roles to assign to identities with matching claim\
+              \ name/value on this provider."
+            items:
+              type: "object"
+              properties:
+                claimName:
+                  type: "string"
+                claimValue:
+                  type: "string"
+                roleIds:
+                  type: "array"
+                  items:
+                    type: "string"
+                    format: "uuid"
+              required:
+              - "claimName"
+              - "claimValue"
+              - "roleIds"
+        required:
+        - "userDisplayNameClaim"
+        - "subjectClaim"
+        - "subjectClaimLabel"
+        - "rolesByClaim"
+    GoogleOidcAuthProviderConfigParameters:
+      allOf:
+      - $ref: "#/components/schemas/OidcAuthProviderConfigParameters"
+      - type: "object"
+    Identity:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        legacyUsername:
+          $ref: "#/components/schemas/IdentityUsername"
+        name:
+          type: "string"
+        builtIn:
+          type: "boolean"
+          description: "Returns 'true' if identity is built-in. Only included if this\
+            \ identity matches the requester or if the requester has 'auth:identity:manage'\
+            \ privilege."
+        roles:
+          type: "array"
+          description: "Only included if this identity matches the requester or if\
+            \ the requester has 'auth:identity:manage' privilege."
+          items:
+            $ref: "#/components/schemas/IdentityRole"
+        scope:
+          type: "array"
+          description: "Only included if this identity matches the requester or if\
+            \ the requester has 'auth:identity:manage' privilege."
+          items:
+            type: "string"
+            format: "uuid"
+        authBindings:
+          $ref: "#/components/schemas/IdentityAuthBindings"
+        privileges:
+          type: "array"
+          description: "Only included if this identity matches the requester or if\
+            \ the requester has 'auth:identity:manage' privilege."
+          items:
+            $ref: "#/components/schemas/Privilege"
+        omittedPrivileges:
+          type: "array"
+          description: "Only included if this identity matches the requester or if\
+            \ the requester has 'auth:identity:manage' privilege."
+          items:
+            $ref: "#/components/schemas/OmittedPrivilege"
+        locked:
+          type: "boolean"
+          description: "Only included if this identity matches the requester or if\
+            \ the requester has 'auth:identity:manage' privilege."
+        lastAuthenticatedAt:
+          type: "string"
+          format: "date-time"
+      required:
+      - "id"
+      - "name"
+    IdentityAuthBinding:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        providerId:
+          type: "string"
+          format: "uuid"
+        providerName:
+          type: "string"
+        lastAuthenticatedAt:
+          type: "string"
+          format: "date-time"
+      required:
+      - "id"
+      - "providerId"
+      - "providerName"
+    IdentityAuthBindings:
+      type: "object"
+      description: "Only included if this identity matches the requester or if the\
+        \ requester has 'auth:identity:manage' privilege."
+      properties:
+        apiKey:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ApiKeyIdentityAuthBinding"
+        ldap:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/LdapIdentityAuthBinding"
+        oidc:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/OidcIdentityAuthBinding"
+        password:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PasswordIdentityAuthBinding"
+      required:
+      - "apiKey"
+      - "ldap"
+      - "oidc"
+      - "password"
+    IdentityCreate:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        roleIds:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+        scope:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+        locked:
+          type: "boolean"
+          default: false
+      required:
+      - "name"
+      - "locked"
+    IdentityPage:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - type: "object"
+        properties:
+          sorts:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/IdentitySort"
+          content:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/Identity"
+        required:
+        - "content"
+    IdentityRole:
+      allOf:
+      - $ref: "#/components/schemas/Role"
+      - type: "object"
+        properties:
+          mappedFrom:
+            type: "object"
+            description: "Present if role is mapped from an auth provider."
+            properties:
+              authProviderId:
+                type: "string"
+                format: "uuid"
+              authProviderName:
+                type: "string"
+              authBindingId:
+                type: "string"
+                format: "uuid"
+              lastUpdated:
+                type: "string"
+                format: "date-time"
+            required:
+            - "authProviderId"
+            - "authProviderName"
+            - "authBindingId"
+    IdentitySort:
+      type: "object"
+      properties:
+        field:
+          $ref: "#/components/schemas/IdentitySortField"
+        descending:
+          type: "boolean"
+      required:
+      - "field"
+      - "descending"
+    IdentitySortField:
+      type: "string"
+      description: "Valid options are 'legacyUsername', 'name', 'lastAuthenticatedAt'.\
+        \ Add ':d' to end to denote descending order."
+      example: "username:d"
+    IdentityUpdate:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        roleIds:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+        scope:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+        locked:
+          type: "boolean"
+    IdentityUsername:
+      type: "string"
+      description: "Deprecated and to be removed.  Unique, immutable username of the\
+        \ identity. Between 2 and 20 alphanumeric, dash, or underscore characters."
+      minLength: 2
+      maxLength: 20
+      pattern: "^[0-9a-zA-Z_-]{2,20}$"
+    Jwk:
+      type: "object"
+      properties:
+        kid:
+          type: "string"
+        kty:
+          $ref: "#/components/schemas/JwkType"
+        use:
+          $ref: "#/components/schemas/JwkUsage"
+      discriminator:
+        propertyName: "kty"
+        mapping:
+          RSA: "#/components/schemas/RsaJwk"
+          EC: "#/components/schemas/EcJwk"
+      required:
+      - "kid"
+      - "kty"
+      - "use"
+    JwkType:
+      type: "string"
+      enum:
+      - "RSA"
+      - "EC"
+    JwkUsage:
+      type: "string"
+      enum:
+      - "sig"
+      - "enc"
+    Jwks:
+      type: "object"
+      properties:
+        keys:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Jwk"
+      required:
+      - "keys"
+    LdapAuthProviderConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderConfig"
+      - type: "object"
+        properties:
+          primaryServer:
+            $ref: "#/components/schemas/LdapServerInfo"
+          secondaryServer:
+            $ref: "#/components/schemas/LdapServerInfo"
+          bindDn:
+            type: "string"
+            description: "DN of the authentication service account. If not set, anonymous."
+          bindPassword:
+            type: "string"
+            description: "Password of the authentication service account. If not set,\
+              \ anonymous."
+          encryption:
+            $ref: "#/components/schemas/LdapEncryptionType"
+            description: "LDAP server's encryption scheme."
+          schemaBaseDn:
+            type: "string"
+            description: "Base DN."
+          schemaUserSubtrees:
+            type: "array"
+            items:
+              type: "string"
+            minItems: 1
+            description: "Subtrees to search for users under. Searched in order first-to-last."
+          schemaUserIdAttribute:
+            type: "string"
+            description: "Name of entry attribute to match identity binding's user\
+              \ ID against."
+          schemaUserIdAttributeLabel:
+            type: "string"
+            description: "Label of entry attribute to match identity binding's user\
+              \ ID against."
+          schemaUserDisplayNameAttribute:
+            type: "string"
+          schemaUserGroupMembershipAttribute:
+            type: "string"
+            description: "Name of entry attribute to extract group DNs from for role\
+              \ mappings."
+          rolesForAllUsers:
+            type: "array"
+            description: "IDs of roles to assign to all identities that authenticate\
+              \ with this provider."
+            items:
+              type: "string"
+              format: "uuid"
+          rolesByGroupDn:
+            type: "array"
+            description: "IDs of roles to assign to identities with matching group\
+              \ DNs on this provider."
+            items:
+              type: "object"
+              properties:
+                groupDn:
+                  type: "string"
+                roleIds:
+                  type: "array"
+                  items:
+                    type: "string"
+                    format: "uuid"
+              required:
+              - "groupDn"
+              - "roleIds"
+          autoProvisionNewIdentities:
+            type: "boolean"
+            description: "Whether new identities should be created upon successful\
+              \ authentication of a user ID that does not match any identity bindings."
+          minimumRefreshSeconds:
+            type: "integer"
+            format: "int64"
+            description: "Number of seconds after which the next request verification\
+              \ will refresh access checks"
+        required:
+        - "minimumRefreshSeconds"
+        - "primaryServer"
+        - "encryption"
+        - "schemaBaseDn"
+        - "schemaUserSubtrees"
+        - "schemaUserIdAttribute"
+        - "schemaUserIdAttributeLabel"
+        - "schemaUserDisplayNameAttribute"
+        - "schemaUserGroupMembershipAttribute"
+        - "rolesForAllUsers"
+        - "rolesByGroupDn"
+        - "autoProvisionNewIdentities"
+        - "minimumRefreshSeconds"
+    LdapAuthProviderPublicConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderPublicConfig"
+      - type: "object"
+        properties:
+          schemaUserIdAttributeLabel:
+            type: "string"
+            description: "Label of entry attribute to match identity binding's user\
+              \ ID against."
+        required:
+        - "schemaUserIdAttributeLabel"
+    LdapEncryptionType:
+      type: "string"
+      enum:
+      - "None"
+      - "LDAPS"
+      - "StartTLS"
+    LdapIdentityAuthBinding:
+      allOf:
+      - $ref: "#/components/schemas/IdentityAuthBinding"
+      - type: "object"
+        properties:
+          userId:
+            type: "string"
+        required:
+        - "userId"
+    LdapServerInfo:
+      type: "object"
+      properties:
+        host:
+          type: "string"
+          description: "LDAP server's hostname or IP."
+        port:
+          type: "integer"
+          description: "LDAP server's port."
+        trustedCertificatesPem:
+          type: "string"
+          description: "LDAP server's certificate (in PEM format)."
+      required:
+      - "host"
+      - "port"
+    LoginApp:
+      type: "object"
+      properties:
+        appId:
+          type: "string"
+          description: "ID of the app to sign an auth token for"
+        appSecret:
+          type: "string"
+          format: "password"
+      required:
+      - "appId"
+      - "appSecret"
+    LoginError:
+      allOf:
+      - $ref: "#/components/schemas/Error"
+      - type: "object"
+        properties:
+          message:
+            type: "string"
+            description: "Known values:\n\n\"account_locked\": Identity locked (due\
+              \ to administrative setting)\n\n\"account_temporarily_locked\": Identity\
+              \ locked (due to incorrect auth attempts)\n\n\"authenticated_but_no_roles\"\
+              : Authenticated successfully, but the identity had no roles\n\n\"credentials_expired\"\
+              : Password change required message\n\n\"credentials_incorrect\": Incorrect\
+              \ credentials message\n\n\"network_connectivity\": A network connection\
+              \ error occurred while interacting with the remote provider\n\n\"protocol\"\
+              : A protocol error occurred while processing the login request\n\n\"\
+              unknown_identity\": No identity account is bound to the authenticated\
+              \ subject and auto-provisioning is not enabled for this auth provider\n"
+        required:
+        - "message"
+    LoginLdap:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+          description: "Username for the login"
+        password:
+          type: "string"
+          format: "password"
+      required:
+      - "username"
+      - "password"
+    LoginPassword:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+          description: "Username for the login"
+        password:
+          type: "string"
+          format: "password"
+        newPassword:
+          type: "string"
+          format: "password"
+      required:
+      - "username"
+      - "password"
+    LoginRefresh:
+      type: "object"
+      properties:
+        refreshToken:
+          type: "string"
+          description: "Encoded JWT"
+      required:
+      - "refreshToken"
+    LoginSuccess:
+      type: "object"
+      properties:
+        authToken:
+          type: "string"
+          description: "Encoded JWT"
+        refreshToken:
+          type: "string"
+          description: "Encoded JWT"
+        identity:
+          $ref: "#/components/schemas/Identity"
+      required:
+      - "authToken"
+    OidcAuthProviderConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderConfig"
+      - type: "object"
+        properties:
+          discoveryUrl:
+            type: "string"
+            description: "Also know as \"OpenID Connect Metadata URL\"."
+          clientId:
+            type: "string"
+            description: "Also know as \"Application ID\" for AzureAD."
+          clientSecret:
+            type: "string"
+          redirectHost:
+            type: "string"
+            description: "IP or fully-qualified hostname that the OIDC provider can\
+              \ reach this Platform instance at."
+          caCertificatePem:
+            type: "string"
+            description: "Provider's CA certificate (in PEM format)."
+          autoProvisionNewIdentities:
+            type: "boolean"
+            description: "Whether new identities should be created upon successful\
+              \ authentication of a user ID that does not match any identity bindings."
+          minimumRefreshSeconds:
+            type: "integer"
+            format: "int64"
+            description: "Number of seconds after which the next request verification\
+              \ will refresh access checks"
+          parameters:
+            $ref: "#/components/schemas/OidcAuthProviderConfigParameters"
+        required:
+        - "discoveryUrl"
+        - "clientId"
+        - "clientSecret"
+        - "redirectHost"
+        - "autoProvisionNewIdentities"
+        - "minimumRefreshSeconds"
+        - "parameters"
+    OidcAuthProviderConfigParameters:
+      type: "object"
+      properties:
+        type:
+          $ref: "#/components/schemas/OidcAuthProviderConfigParametersType"
+        rolesForAllUsers:
+          type: "array"
+          description: "IDs of roles to assign to all identities that authenticate\
+            \ with this provider."
+          items:
+            type: "string"
+            format: "uuid"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          generic: "#/components/schemas/GenericOidcAuthProviderConfigParameters"
+          azureAd: "#/components/schemas/AzureAdOidcAuthProviderConfigParameters"
+          google: "#/components/schemas/GoogleOidcAuthProviderConfigParameters"
+      required:
+      - "type"
+      - "rolesForAllUsers"
+    OidcAuthProviderConfigParametersType:
+      type: "string"
+      enum:
+      - "generic"
+      - "azureAd"
+      - "google"
+    OidcAuthProviderPublicConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderPublicConfig"
+      - type: "object"
+        description: "Public config of OIDC auth provider"
+    OidcCode:
+      type: "object"
+      properties:
+        code:
+          type: "string"
+        state:
+          type: "string"
+      required:
+      - "code"
+      - "state"
+    OidcContext:
+      type: "object"
+      properties:
+        providerId:
+          type: "string"
+          description: "ID of the OIDC auth provider"
+        url:
+          type: "string"
+          description: "The URL where the user can authenticate"
+        redirectUri:
+          type: "string"
+          description: "The OAuth callback URL. Already encoded into the redirect\
+            \ URL, but included here in case needed by the browser app."
+        state:
+          type: "string"
+          description: "The OAuth state token. Already encoded into the redirect URL,\
+            \ but included here in case needed by the browser app."
+        nonce:
+          type: "string"
+          description: "The OAuth nonce token. Already encoded into the redirect URL,\
+            \ but included here in case needed by the browser app."
+    OidcIdentityAuthBinding:
+      allOf:
+      - $ref: "#/components/schemas/IdentityAuthBinding"
+      - type: "object"
+        properties:
+          subject:
+            type: "string"
+        required:
+        - "subject"
+    OmittedPrivilege:
+      allOf:
+      - $ref: "#/components/schemas/Privilege"
+      - type: "object"
+        properties:
+          reason:
+            type: "string"
+        required:
+        - "reason"
+    Page:
+      type: "object"
+      properties:
+        pageNumber:
+          type: "integer"
+          format: "int64"
+          description: "1-based indexing"
+        pageSize:
+          type: "integer"
+          format: "int64"
+        totalCount:
+          type: "integer"
+          format: "int64"
+        totalCountExceededLimit:
+          type: "boolean"
+          description: "If the total count actually exceeded the pagination criteria's\
+            \ 'limitTotalCount' parameter"
+        totalPages:
+          type: "integer"
+          format: "int64"
+      required:
+      - "pageNumber"
+      - "totalCount"
+    PasswordAuthProviderConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderConfig"
+      - type: "object"
+        properties:
+          minLength:
+            type: "integer"
+            description: "Minimum number of total characters a password must have"
+          minUppercase:
+            type: "integer"
+            description: "Minimum number of uppercase characters a password must have"
+          minLowercase:
+            type: "integer"
+            description: "Minimum number of lowercase characters a password must have"
+          minDigit:
+            type: "integer"
+            description: "Minimum number of digit characters a password must have"
+          minSpecial:
+            type: "integer"
+            description: "Minimum number of special characters a password must have"
+          historyRemember:
+            type: "integer"
+            description: "History remember check for previously used passwords. Setting\
+              \ to '0' implies no history checking.\n"
+          lockoutThresholdAttempts:
+            type: "integer"
+            description: "Number of failed authentication attempts before lock out\
+              \ is triggered.\n"
+          lockoutThresholdObservationSeconds:
+            type: "integer"
+            description: "How long (in seconds) before failed authentication attempts\
+              \ are not considered in threshold.\n"
+          lockoutSeconds:
+            type: "integer"
+            description: "How long (in seconds) a username is prevented from authenticating\
+              \ when triggering a lockout.\n"
+          validDays:
+            type: "integer"
+            description: "Number of days a password is valid until it expires"
+        required:
+        - "minLength"
+        - "minUppercase"
+        - "minLowercase"
+        - "minDigit"
+        - "minSpecial"
+        - "historyRemember"
+        - "lockoutThresholdAttempts"
+        - "lockoutThresholdObservationSeconds"
+        - "lockoutSeconds"
+        - "validDays"
+    PasswordAuthProviderPublicConfig:
+      allOf:
+      - $ref: "#/components/schemas/AuthProviderPublicConfig"
+      - type: "object"
+        properties:
+          minLength:
+            type: "integer"
+            description: "Minimum number of total characters a password must have"
+          minUppercase:
+            type: "integer"
+            description: "Minimum number of uppercase characters a password must have"
+          minLowercase:
+            type: "integer"
+            description: "Minimum number of lowercase characters a password must have"
+          minDigit:
+            type: "integer"
+            description: "Minimum number of digit characters a password must have"
+          minSpecial:
+            type: "integer"
+            description: "Minimum number of special characters a password must have"
+        required:
+        - "minLength"
+        - "minUppercase"
+        - "minLowercase"
+        - "minDigit"
+        - "minSpecial"
+    PasswordIdentityAuthBinding:
+      allOf:
+      - $ref: "#/components/schemas/IdentityAuthBinding"
+      - type: "object"
+        properties:
+          username:
+            type: "string"
+        required:
+        - "username"
+    Permission:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        description:
+          type: "string"
+        scopeable:
+          type: "boolean"
+      required:
+      - "id"
+      - "scopeable"
+    PermissionsPreviewRequest:
+      type: "object"
+      properties:
+        roleIds:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+        scope:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+      required:
+      - "roleIds"
+      - "scope"
+    PermissionsPreviewResponse:
+      type: "object"
+      properties:
+        privileges:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Privilege"
+        omittedPrivileges:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/OmittedPrivilege"
+      required:
+      - "privileges"
+      - "omittedPrivileges"
+    Privilege:
+      type: "object"
+      properties:
+        permissionExpressions:
+          type: "array"
+          description: "One or more permissions expressions.\nA permission expression\
+            \ can be an exact permission or include a wildcard '*' at the end.\nExamples:\
+            \ 'notification:read' or 'asset:*'\n"
+          items:
+            type: "string"
+            example: "asset:*"
+        scope:
+          type: "array"
+          items:
+            type: "string"
+            format: "uuid"
+      required:
+      - "permissionExpressions"
+      - "scope"
+    Role:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        builtIn:
+          type: "boolean"
+          description: "Returns 'true' if role is built-in."
+        permissions:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Permission"
+      required:
+      - "id"
+      - "name"
+      - "builtIn"
+      - "permissions"
+    RoleCreate:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+        permissionIds:
+          type: "array"
+          items:
+            type: "string"
+      required:
+      - "name"
+    RolePage:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - type: "object"
+        properties:
+          sorts:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/RoleSort"
+          content:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/Role"
+        required:
+        - "content"
+    RoleSort:
+      type: "object"
+      description: "Sorting criteria for roles."
+      properties:
+        field:
+          $ref: "#/components/schemas/AuthProviderSortField"
+        descending:
+          type: "boolean"
+      required:
+      - "field"
+      - "descending"
+    RoleUpdate:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+        permissionIds:
+          type: "array"
+          items:
+            type: "string"
+    RsaJwk:
+      allOf:
+      - $ref: "#/components/schemas/Jwk"
+      - type: "object"
+        properties:
+          alg:
+            type: "string"
+            enum:
+            - "RS256"
+            - "RS384"
+            - "RS512"
+          "n":
+            type: "string"
+          e:
+            type: "string"
+        required:
+        - "n"
+        - "e"
+    TemporaryPassword:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+          description: "Username for the temporary password"
+        password:
+          type: "string"
+          format: "password"
+      required:
+      - "username"
+      - "password"
+    TestLdapRequest:
+      type: "object"
+      properties:
+        config:
+          $ref: "#/components/schemas/LdapAuthProviderConfig"
+          description: "The full LDAP config, including encryption type and both server\
+            \ parameters."
+        userId:
+          type: "string"
+          description: "User ID to test authentication as. If not set, only tests\
+            \ connection."
+        password:
+          type: "string"
+          description: "Password to test authentication as. If not set, only tests\
+            \ connection."
+        server:
+          type: "string"
+          enum:
+          - "primary"
+          - "secondary"
+          description: "Which server to test against, primary or secondary."
+      required:
+      - "config"
+      - "server"
+    TestLdapResponse:
+      type: "object"
+      properties:
+        executionMs:
+          type: "integer"
+          format: "int64"
+          description: "How long (in milliseconds) it took to execute the test."
+        connection:
+          type: "object"
+          description: "Details about the connection phase."
+          properties:
+            executionMs:
+              type: "integer"
+              format: "int64"
+              description: "How long (in milliseconds) it took to establish the connection\
+                \ (or fail to in the case of an error)."
+            serverProperties:
+              type: "object"
+              description: "Information about LDAP server. Presence indicates connection\
+                \ was successful."
+              additionalProperties:
+                type: "string"
+            error:
+              type: "string"
+              description: "Error message explaining why the connection attempt failed.\
+                \ Presence indicates connection failed."
+          required:
+          - "executionMs"
+        authentication:
+          type: "object"
+          description: "Details about the authentication phase. Not present if no\
+            \ user credentials were passed in request."
+          properties:
+            executionMs:
+              type: "integer"
+              format: "int64"
+              description: "How long (in milliseconds) it took to perform the authentication,\
+                \ including group resolution."
+            userProperties:
+              type: "object"
+              description: "Information about authenticated user. Presence indicates\
+                \ authentication was successful."
+              additionalProperties:
+                type: "string"
+            userRelevantGroupDns:
+              type: "array"
+              description: "Group DNs resolved to user."
+              items:
+                type: "string"
+            userMappedRoleId:
+              type: "array"
+              description: "Roles IDs resolved from the user's group DNs."
+              items:
+                type: "string"
+                format: "uuid"
+            error:
+              type: "string"
+              description: "Error message explaining why the authentication attempt\
+                \ failed. Presence indicates authentication failed."
+          required:
+          - "executionMs"
+      required:
+      - "executionMs"
+      - "connection"

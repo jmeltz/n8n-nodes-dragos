@@ -1,0 +1,3649 @@
+---
+openapi: "3.0.3"
+info:
+  version: "2.1.19"
+  title: "Dragos Notification Service"
+  description: "# FIQL\n\n## Operators\n\n| Operator | Expected Argument Types | Allows\
+    \ Multiple Arguments | Matching Criteria (non-array value) | Matching Criteria\
+    \ (array value) |\n|---|---|---|---|---|\n| `==` | number, string, boolean | no\
+    \ | argument equals the record's value | argument equals one of the record's values\
+    \ |\n| `!=` | number, string, boolean | no | argument does not equal the record's\
+    \ value | argument equal none of the record's values |\n| `=gt=` | number | no\
+    \ | argument is greater than the record's value | argument is greater than any\
+    \ of the record's values |\n| `=ge=` | number | no | argument is greater or equal\
+    \ to than the record's value | argument is greater than or equal to any of the\
+    \ record's values |\n| `=lt=` | number | no | argument is less than the record's\
+    \ value | argument is less than any of the record's values |\n| `=le=` | number\
+    \ | no | argument is less than or equal to the record's value | argument is less\
+    \ than or equal to any of the record's values |\n| `=in=` | number, string, boolean\
+    \ | yes | at least one of the arguments equal the record's value | at least one\
+    \ of the arguments equal one of the record's values |\n| `=out=` | number, string,\
+    \ boolean | yes | none of the arguments equal the record's value | none of the\
+    \ arguments equal any of the record's values |\n| `=all=` | number, string, boolean\
+    \ | yes | n/a | all of the argument equals one of the record's values |\n| `=exists=`\
+    \ | boolean | no | if argument is `true`, record's value exists (and is non-null);\
+    \ if argument is `false`, record's value does not exists (or is null) | same as\
+    \ non-array value |\n| `=regex=` | number, string, boolean | no | argument (as\
+    \ regex) matches the record's value | argument (as regex) matches at least one\
+    \ of the record's values |\n| `=regexNoCase=` | number, string, boolean | no |\
+    \ argument (as case insensitive regex) matches the record's value | argument (as\
+    \ case insensitive regex) matches at least one of the record's values |\n| `=notregex=`\
+    \ | number, string, boolean | no | argument (as regex) matches the record's value\
+    \ | argument (as regex) matches at least one of the record's values |\n| `=startsWith=`\
+    \ | number, string, boolean | no | matches if the record's value starts with the\
+    \ argument | matches if the at least one of the record's values starts with the\
+    \ argument |\n| `=startsWith=` | number, string, boolean | no | matches if the\
+    \ record's value starts with the argument ignoring case | matches if the at least\
+    \ one of the record's values starts with the argument ignoring case |\n| `=endsWith=`\
+    \ | number, string, boolean | no | matches if the record's value ends with the\
+    \ argument | matches if the at least one of the record's values ends with the\
+    \ argument |\n| `=endsWith=` | number, string, boolean | no | matches if the record's\
+    \ value ends with the argument ignoring case | matches if the at least one of\
+    \ the record's values ends with the argument ignoring case |\n| `=glob=` | number,\
+    \ string, boolean | no | argument (as glob) matches the record's value | argument\
+    \ (as glob) matches at least one of the record's values |\n| `=globNoCase=` |\
+    \ number, string, boolean | no | argument (as case-insensitive glob) matches the\
+    \ record's value | argument (as as case-insensitive glob) matches at least one\
+    \ of the record's values |\n| `=globAnywhere=` | number, string, boolean | no\
+    \ | argument (as glob) matches any section of the record's value | argument (as\
+    \ glob) matches any section of at least one of the record's values |\n| `=globAnywhere=`\
+    \ | number, string, boolean | no | argument (as case-insensitive glob) matches\
+    \ any section of the record's value | argument (as case-insensitive glob) matches\
+    \ any section of at least one of the record's values |\n| `=notglob=` | number,\
+    \ string, boolean | no | argument (as glob) matches the record's value | argument\
+    \ (as glob) matches at least one of the record's values |\n| `=cidr=` | string\
+    \ | no | the record's value is within the cidr range specified by the argument\
+    \ | n/a |\n\n## Selectors\n\n### Notification Selectors\n\n| Selector | Value\
+    \ Type | Data Model Mapping | Notes |\n|---|---|---|---|\n| `id` | number | `id`\
+    \ | Cannot use on NotificationCreationRule's criteria. |\n| `type` | string |\
+    \ `type` | |\n| `source` | string | `source` | |\n| `summary` | string | `summary`\
+    \ | |\n| `content` | string | `content` | |\n| `severity` | number | `severity`\
+    \ | |\n| `reviewed` | boolean | `reviewed` | Cannot use on NotificationCreationRule's\
+    \ criteria. |\n| `retained` | boolean | `retained` | Cannot use on NotificationCreationRule's\
+    \ criteria. |\n| `detectorId` | string | `detectorId` | |\n| `parentNotificationId`\
+    \ | number | `parentNotificationId` | |\n| `matchedRuleId` | number | `matchedRuleId`\
+    \ | Deprecated by BEND-592](https://dragosinc.atlassian.net/browse/BEND-592).\
+    \ Use `matchedRuleIds` instead. |\n| `matchedRuleIds` | array (numbers) | `matchedRuleIds`\
+    \ | |\n| `createdAt` | string (iso8601) | `createdAt` | |\n| `updatedAt` | string\
+    \ (iso8601) | `updatedAt` | Time of the last update for the notification |\n|\
+    \ `occurredAt` | string (iso8601) | `occurredAt` | |\n| `assetId` | number | `asset.*.id`\
+    \ | |\n| `assetType` | string | `asset.*.attributes.type` | |\n| `assetLabel`\
+    \ | string | `asset.*.attributes.labels` | |\n| `addressNetworkId` | string |\
+    \ `asset.*.addresses.*.networkId` | \"null\" will be interpretted as a literal\
+    \ null (undefined network ID). Can only use `==` and `=in=` operators for this\
+    \ selector. |\n| `addressValue` | string | `asset.*.addresses.*.value` | |\n|\
+    \ `sourceIpValue` | string | `asset.*.addresses.*.value` | Only for assets with\
+    \ `directionalities` that include `source` and addresses that are `type` of `IP`\
+    \ |\n| `destinationIpValue` | string | `asset.*.addresses.*.value` | Only for\
+    \ assets with `directionalities` that include `destination` and addresses that\
+    \ are `type` of `IP` |\n| `otherIpValue` | string | `asset.*.addresses.*.value`\
+    \ | Only for assets with no `directionalities` and addresses that are `type` of\
+    \ `IP` |\n| `sensorId` | string | `collectors.*.sensorId` | |\n| `analyticEventId`\
+    \ | string | `analyticEventId` | |\n| `detectionQuads` | string | `detectionQuads`\
+    \ | Only supports `==` and `!=` operators |\n| `detectionQuad` | string | N/A\
+    \ (quad of AES detection) | Only supports `==` and `!=` operators |\n| `metadataType`\
+    \ | string | | `metadata.type` | Only supports `==`, `!=`, `=in=`, and `=out=`\
+    \ operators |\n| `metadataAssetId` | array (numbers) | `metadata.assetId` | Only\
+    \ include asset Ids with no destination |\n| `metadataSourceAssetId` | array (numbers)\
+    \ | `metadata.sourceAssetId` | Only includes source asset ids |\n| `metadataDestinationAssetId`\
+    \ | array (numbers) | `metadata.destinationAssetId` | Only includes destination\
+    \ asset ids |\n| `metadataAnyAssetId` | array (numbers) | `metadata.assetId` and\
+    \ `metadata.sourceAssetId` and `metadata.destinationAssetId` | Searches all asset\
+    \ ids in metadata |\n| `metadataPeerCommunicationDeviationProtocol` | string |\
+    \ `metadata.protocol` | Only supports `==`, `!=`, `=in=`, and `=out=` operators\
+    \ |\n| `assetAttribute-{attributeName}` | any | assets.attributes.{attributeName}\
+    \ | Searches attributes in assets - replace {attributeName} with name of attribute\
+    \ |\n| `sourceAssetAttribute-{attributeName}` | any | sourceAsset.attributes.{attributeName}\
+    \ | Searches attributes in source asset - replace {attributeName} with name of\
+    \ attribute |\n| `destinationAssetAttribute-{attributeName}` | any | destinationAsset.attributes.{attributeName}\
+    \ | Searches attributes in destination asset - replace {attributeName} with name\
+    \ of attribute |\n| `firstSeenAt` | string (iso8601) | `firstSeenAt` | Cannot\
+    \ use on NotificationCreationRule's criteria. |\n| `lastSeenAt` | string (iso8601)\
+    \ | `lastSeenAt` | Cannot use on NotificationCreationRule's criteria. |\n| `count`\
+    \ | number | count | Cannot use on NotificationCreationRule's criteria. |\n| `baselineId`\
+    \ | number | `metadata.baselineId` | Searches for notifications with baseline\
+    \ ID. Only supports `==`, `!=`, `=in=`, and `=out=` operators |\n| `state` | string\
+    \ | `state` | Only supports `==`, `!=`, `=in=`, and `=out=` operators. Cannot\
+    \ use on NotificationCreationRule's criteria. |\n| `threatFramework` | string\
+    \ | `threatInfo.*.framework` | |\n| `threatTacticId` | string | `threatInfo.*.tactic.id`\
+    \ | |\n| `threatTacticName` | string | `threatInfo.*.tactic.name` | |\n| `threatTechniqueId`\
+    \ | string | `threatInfo.*.technique.id` | |\n| `threatTechniqueName` | string\
+    \ | `threatInfo.*.technique.name` | |\n| `packetCaptureState` | string | `packetCapture.state`\
+    \ | Cannot use on NotificationCreationRule's criteria. |\n\n### Notification Creation\
+    \ Rule Selectors\n\n| Selector | Value Type | Data Model Mapping | Notes |\n|---|---|---|---|\n\
+    | `id` | number | `id` | |\n| `description` | string | `description` | |\n| `overrideSeverity`\
+    \ | number | `overrideSeverity` | |\n| `drop` | boolean | `drop` | |\n| `stopProcessing`\
+    \ | boolean | `stopProcessing` | |\n| `actionIds` | long | `actionIds` | |\n|\
+    \ `expiresAt` | string (iso8601) | `expiresAt` | |\n\n### Notification Creation\
+    \ Rule Action Selectors\n\n| Selector | Value Type | Data Model Mapping | Notes\
+    \ |\n|---|---|---|---|\n| `id` | number | `id` | |\n| `enabled` | boolean | `enabled`\
+    \ | |\n| `type` | string | `parameters.type` | |\n"
+servers:
+- url: "../"
+paths:
+  /api/v2/notification:
+    post:
+      operationId: "createNotification"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "system"
+      summary: "Create a new notification"
+      description: "Requester must have \"system\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationCreateRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    type: "example"
+                    source: "example"
+                    summary: "example"
+                    content: "example"
+                    detectorId: "example"
+                    parentNotificationId: 0
+                    occurredAt: "2017-04-01T01:02:03Z"
+                    metadata:
+                      type: "AssetBaselineDeviation"
+                      baselineId: 0
+                      datatype: "example"
+                      signatureId: "example"
+                      assetId: 0
+                    firstSeenAt: "2017-04-01T01:02:03Z"
+                    lastSeenAt: "2017-05-01T01:02:03Z"
+                    severity: 0
+                    collectors:
+                    - sensorId: "example"
+                      collectorId: "example"
+                      customerId: "example"
+                    analyticEventId: "example"
+                    analyticEventIndex: "example"
+                    sourceIndex: "example"
+                    sourceIdField: "example"
+                    sourceIds:
+                    - "example"
+                    uniqueId: "example"
+                    threatInfo:
+                    - framework: "example"
+                      tactic:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                      technique:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                    intelReports:
+                    - "example"
+                    id: 0
+                    assets:
+                    - id: 0
+                      enriched: false
+                      attributes: {}
+                      createdAt: "2017-04-01T01:02:03Z"
+                      addresses:
+                      - id: 0
+                        type: "example"
+                        value: "example"
+                        networkId: "example"
+                        createdAt: "2017-04-01T01:02:03Z"
+                      directionalities:
+                      - "example"
+                      truncatedAddresses: false
+                    childNotifications:
+                    - type: "example"
+                      source: "example"
+                      summary: "example"
+                      content: "example"
+                      detectorId: "example"
+                      parentNotificationId: 0
+                      occurredAt: "2017-04-01T01:02:03Z"
+                      metadata:
+                        type: "AssetBaselineDeviation"
+                        baselineId: 0
+                        datatype: "example"
+                        signatureId: "example"
+                        assetId: 0
+                      firstSeenAt: "2017-04-01T01:02:03Z"
+                      lastSeenAt: "2017-05-01T01:02:03Z"
+                      severity: 0
+                      collectors:
+                      - sensorId: "example"
+                        collectorId: "example"
+                        customerId: "example"
+                      analyticEventId: "example"
+                      analyticEventIndex: "example"
+                      sourceIndex: "example"
+                      sourceIdField: "example"
+                      sourceIds:
+                      - "example"
+                      uniqueId: "example"
+                      threatInfo:
+                      - framework: "example"
+                        tactic:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                        technique:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                      intelReports:
+                      - "example"
+                    createdAt: "2017-04-01T01:02:03Z"
+                    updatedAt: "2017-04-01T01:02:03Z"
+                    count: 1
+                    originalSeverity: 0
+                    matchedRuleId: 0
+                    matchedRuleIds:
+                    - 0
+                    reviewed: false
+                    retained: false
+                    mutedUntil: "2017-04-01T01:02:03Z"
+                    state: "example"
+                    detectionQuads:
+                    - "example"
+                    packetCapture:
+                      state: "example"
+                      file:
+                        id: 0
+                        hash:
+                          sha256: "example"
+                        links:
+                          metadata: "example"
+                          content: "example"
+                    fileIds:
+                    - "example"
+        "204":
+          description: "Success (dropped due to rule)"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+      x-code-samples:
+      - lang: "Full Example"
+        source: "{\n  \"source\": \"Snort\",\n  \"type\": \"Alert\",\n  \"summary\"\
+          : \"Signature 5102\",\n  \"content\": \"http://snort.org/signature/5102\"\
+          ,\n  \"assetIds\": [\n    {\n      \"id\": 56,\n      \"directionalities\"\
+          : [\n        \"source\",\n        \"destination\"\n      ]\n    },\n   \
+          \ {\n      \"id\": 32\n    }\n  ],\n  \"severity\": 3\n}\n"
+      - lang: "Minimal Example"
+        source: "{\n  \"source\": \"Snort\",\n  \"type\": \"Alert\",\n  \"summary\"\
+          : \"Signature 5102\",\n  \"severity\": 3\n}\n"
+    get:
+      operationId: "getNotificationPage"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Get a page of notifications"
+      description: "Requester must have \"notification:read\" privilege. While this\
+        \ endpoint allows for specifying both PageNumber\nand Offset parameters, if\
+        \ Offset is supplied it will take precedence over PageNumber.\n"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageSize"
+      - $ref: "#/components/parameters/Offset"
+      - $ref: "#/components/parameters/NotificationSorts"
+      - $ref: "#/components/parameters/NotificationSortField"
+      - $ref: "#/components/parameters/SortDescending"
+      - $ref: "#/components/parameters/LimitTotalCount"
+      - $ref: "#/components/parameters/NotificationFilter"
+      - name: "resolveChildrenDepth"
+        in: "query"
+        schema:
+          type: "integer"
+        description: "Number of steps deep to recursively resolve child notifications"
+      responses:
+        "200":
+          $ref: "#/components/responses/NotificationPageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+    put:
+      operationId: "updateNotifications"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:update"
+      summary: "Update many notifications"
+      description: "Requester must have \"notification:update\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - $ref: "#/components/parameters/NotificationFilter"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationUpdateRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "integer"
+                format: "int64"
+                description: "Count of notifications updated"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+  /api/v2/notification/batch:
+    get:
+      operationId: "getNotificationsBatch"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Get notification details"
+      description: "Requester must have \"notification:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "ids"
+        in: "query"
+        required: true
+        schema:
+          type: "array"
+          items:
+            type: "integer"
+            format: "int64"
+      - name: "resolveChildrenDepth"
+        in: "query"
+        schema:
+          type: "integer"
+        description: "Number of steps deep to recursively resolve child notifications"
+      - name: "includeConversations"
+        in: "query"
+        schema:
+          type: "boolean"
+        description: "Whether conversations should be included with the notification,\
+          \ default is true"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/NotificationDetails"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                  - type: "example"
+                    source: "example"
+                    summary: "example"
+                    content: "example"
+                    detectorId: "example"
+                    parentNotificationId: 0
+                    occurredAt: "2017-04-01T01:02:03Z"
+                    metadata:
+                      type: "AssetBaselineDeviation"
+                      baselineId: 0
+                      datatype: "example"
+                      signatureId: "example"
+                      assetId: 0
+                    firstSeenAt: "2017-04-01T01:02:03Z"
+                    lastSeenAt: "2017-05-01T01:02:03Z"
+                    severity: 0
+                    collectors:
+                    - sensorId: "example"
+                      collectorId: "example"
+                      customerId: "example"
+                    analyticEventId: "example"
+                    analyticEventIndex: "example"
+                    sourceIndex: "example"
+                    sourceIdField: "example"
+                    sourceIds:
+                    - "example"
+                    uniqueId: "example"
+                    threatInfo:
+                    - framework: "example"
+                      tactic:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                      technique:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                    intelReports:
+                    - "example"
+                    id: 0
+                    assets:
+                    - id: 0
+                      enriched: false
+                      attributes: {}
+                      createdAt: "2017-04-01T01:02:03Z"
+                      addresses:
+                      - id: 0
+                        type: "example"
+                        value: "example"
+                        networkId: "example"
+                        createdAt: "2017-04-01T01:02:03Z"
+                      directionalities:
+                      - "example"
+                      truncatedAddresses: false
+                    childNotifications:
+                    - type: "example"
+                      source: "example"
+                      summary: "example"
+                      content: "example"
+                      detectorId: "example"
+                      parentNotificationId: 0
+                      occurredAt: "2017-04-01T01:02:03Z"
+                      metadata:
+                        type: "AssetBaselineDeviation"
+                        baselineId: 0
+                        datatype: "example"
+                        signatureId: "example"
+                        assetId: 0
+                      firstSeenAt: "2017-04-01T01:02:03Z"
+                      lastSeenAt: "2017-05-01T01:02:03Z"
+                      severity: 0
+                      collectors:
+                      - sensorId: "example"
+                        collectorId: "example"
+                        customerId: "example"
+                      analyticEventId: "example"
+                      analyticEventIndex: "example"
+                      sourceIndex: "example"
+                      sourceIdField: "example"
+                      sourceIds:
+                      - "example"
+                      uniqueId: "example"
+                      threatInfo:
+                      - framework: "example"
+                        tactic:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                        technique:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                      intelReports:
+                      - "example"
+                    createdAt: "2017-04-01T01:02:03Z"
+                    updatedAt: "2017-04-01T01:02:03Z"
+                    count: 1
+                    originalSeverity: 0
+                    matchedRuleId: 0
+                    matchedRuleIds:
+                    - 0
+                    reviewed: false
+                    retained: false
+                    mutedUntil: "2017-04-01T01:02:03Z"
+                    state: "example"
+                    detectionQuads:
+                    - "example"
+                    packetCapture:
+                      state: "example"
+                      file:
+                        id: 0
+                        hash:
+                          sha256: "example"
+                        links:
+                          metadata: "example"
+                          content: "example"
+                    fileIds:
+                    - "example"
+                    conversations:
+                    - tag: "example"
+                      detectedAt: "2020-04-01T13:02:28Z"
+                      sourceAssetId: 0
+                      destinationAssetId: 0
+                      sourceAddressId: 0
+                      destinationAddressId: 0
+                      sourceAddressValue: "example"
+                      destinationAddressValue: "example"
+                      protocols:
+                      - "example"
+                      sourcePorts:
+                      - port: 0
+                        transportProtocol: "example"
+                      destinationPorts:
+                      - port: 0
+                        transportProtocol: "example"
+                      otherPorts:
+                      - port: 0
+                        transportProtocol: "example"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+    post:
+      operationId: "queryNotificationsBatch"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Get notification details"
+      description: "Requester must have \"notification:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "resolveChildrenDepth"
+        in: "query"
+        schema:
+          type: "integer"
+        description: "Number of steps deep to recursively resolve child notifications"
+      - name: "includeConversations"
+        in: "query"
+        schema:
+          type: "boolean"
+        description: "Whether conversations should be included with the notification,\
+          \ default is true"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                ids:
+                  type: "array"
+                  items:
+                    type: "integer"
+                    format: "int64"
+                  description: "Set of notification ids to be retrieved"
+              required:
+              - "ids"
+            examples:
+              generated:
+                summary: "Auto-generated example"
+                value:
+                  ids:
+                  - 0
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/NotificationDetails"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                  - type: "example"
+                    source: "example"
+                    summary: "example"
+                    content: "example"
+                    detectorId: "example"
+                    parentNotificationId: 0
+                    occurredAt: "2017-04-01T01:02:03Z"
+                    metadata:
+                      type: "AssetBaselineDeviation"
+                      baselineId: 0
+                      datatype: "example"
+                      signatureId: "example"
+                      assetId: 0
+                    firstSeenAt: "2017-04-01T01:02:03Z"
+                    lastSeenAt: "2017-05-01T01:02:03Z"
+                    severity: 0
+                    collectors:
+                    - sensorId: "example"
+                      collectorId: "example"
+                      customerId: "example"
+                    analyticEventId: "example"
+                    analyticEventIndex: "example"
+                    sourceIndex: "example"
+                    sourceIdField: "example"
+                    sourceIds:
+                    - "example"
+                    uniqueId: "example"
+                    threatInfo:
+                    - framework: "example"
+                      tactic:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                      technique:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                    intelReports:
+                    - "example"
+                    id: 0
+                    assets:
+                    - id: 0
+                      enriched: false
+                      attributes: {}
+                      createdAt: "2017-04-01T01:02:03Z"
+                      addresses:
+                      - id: 0
+                        type: "example"
+                        value: "example"
+                        networkId: "example"
+                        createdAt: "2017-04-01T01:02:03Z"
+                      directionalities:
+                      - "example"
+                      truncatedAddresses: false
+                    childNotifications:
+                    - type: "example"
+                      source: "example"
+                      summary: "example"
+                      content: "example"
+                      detectorId: "example"
+                      parentNotificationId: 0
+                      occurredAt: "2017-04-01T01:02:03Z"
+                      metadata:
+                        type: "AssetBaselineDeviation"
+                        baselineId: 0
+                        datatype: "example"
+                        signatureId: "example"
+                        assetId: 0
+                      firstSeenAt: "2017-04-01T01:02:03Z"
+                      lastSeenAt: "2017-05-01T01:02:03Z"
+                      severity: 0
+                      collectors:
+                      - sensorId: "example"
+                        collectorId: "example"
+                        customerId: "example"
+                      analyticEventId: "example"
+                      analyticEventIndex: "example"
+                      sourceIndex: "example"
+                      sourceIdField: "example"
+                      sourceIds:
+                      - "example"
+                      uniqueId: "example"
+                      threatInfo:
+                      - framework: "example"
+                        tactic:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                        technique:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                      intelReports:
+                      - "example"
+                    createdAt: "2017-04-01T01:02:03Z"
+                    updatedAt: "2017-04-01T01:02:03Z"
+                    count: 1
+                    originalSeverity: 0
+                    matchedRuleId: 0
+                    matchedRuleIds:
+                    - 0
+                    reviewed: false
+                    retained: false
+                    mutedUntil: "2017-04-01T01:02:03Z"
+                    state: "example"
+                    detectionQuads:
+                    - "example"
+                    packetCapture:
+                      state: "example"
+                      file:
+                        id: 0
+                        hash:
+                          sha256: "example"
+                        links:
+                          metadata: "example"
+                          content: "example"
+                    fileIds:
+                    - "example"
+                    conversations:
+                    - tag: "example"
+                      detectedAt: "2020-04-01T13:02:28Z"
+                      sourceAssetId: 0
+                      destinationAssetId: 0
+                      sourceAddressId: 0
+                      destinationAddressId: 0
+                      sourceAddressValue: "example"
+                      destinationAddressValue: "example"
+                      protocols:
+                      - "example"
+                      sourcePorts:
+                      - port: 0
+                        transportProtocol: "example"
+                      destinationPorts:
+                      - port: 0
+                        transportProtocol: "example"
+                      otherPorts:
+                      - port: 0
+                        transportProtocol: "example"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+  /api/v2/notification/query:
+    post:
+      operationId: "queryNotificationPage"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Get a page of notifications (alternative)"
+      description: "Same as 'GET /api/v2/notification', but passing non-pagination\
+        \ request criteria in a JSON request body.\n\nRequester must have \"notification:read\"\
+        \ privilege.\n"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageSize"
+      - $ref: "#/components/parameters/Offset"
+      - $ref: "#/components/parameters/NotificationSorts"
+      - $ref: "#/components/parameters/NotificationSortField"
+      - $ref: "#/components/parameters/SortDescending"
+      - $ref: "#/components/parameters/LimitTotalCount"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationPageRequestBody"
+      responses:
+        "200":
+          $ref: "#/components/responses/NotificationPageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v2/notification/mergeUniqueIds:
+    post:
+      operationId: "mergeNotifications"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:update"
+      summary: "Merges the aggregated state of the 'UNRESOLVED' or 'MUTED' source\
+        \ notifications into a target"
+      description: "Sources and targets are specified with their 'uniqueId' fields.\n\
+        Merges aggregated fields (firstSeen, lastSeen, count) of the sources and any\
+        \ possible children to the target.\nSources are deleted after a merge.\nOnly\
+        \ 'UNRESOLVED' and 'MUTED' notifications are merged, any other notification\
+        \ will be ignored.\nIf the notifications are a mix of `UNRESOLVED` and `MUTED`\
+        \ notifications, the target state is set to `UNRESOLVED`\nThe request should\
+        \ fail if a merge of different metadata types is attempted.\n"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationsMergeByUniqueIdRequest"
+            examples:
+              generated:
+                summary: "Auto-generated example"
+                value:
+                  sourceUniqueIds:
+                  - "example"
+                  targetUniqueId: "example"
+      responses:
+        "200":
+          description: "Success"
+        "400":
+          description: "Invalid Request"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v2/notification/export:
+    post:
+      operationId: "exportNotifications"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Exports notifications matching the specified criteria"
+      description: "Exports notifications.\nRequires 'notification:read' privilege.\n\
+        Some of the exported fields, such as notification IDs, are instance specific\
+        \ and have no meaning outside of the\nsitestore they originate from.\n"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - $ref: "#/components/parameters/NotificationFilter"
+      x-manual-respond: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationsExportRequest"
+            examples:
+              generated:
+                summary: "Auto-generated example"
+                value:
+                  format: "example"
+                  fields:
+                  - "example"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            text/csv:
+              schema:
+                type: "string"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value: "example"
+            text/tab-separated-values:
+              schema:
+                type: "string"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value: "example"
+        "400":
+          description: "Invalid Request"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v2/notification/{id}:
+    get:
+      operationId: "getNotificationDetails"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Get notification details"
+      description: "Requester must have \"notification:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the notification"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      - name: "resolveChildrenDepth"
+        in: "query"
+        schema:
+          type: "integer"
+        description: "Number of steps deep to recursively resolve child notifications"
+      - name: "includeConversations"
+        in: "query"
+        schema:
+          type: "boolean"
+        description: "Whether conversations should be included with the notification,\
+          \ default is true"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationDetails"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    type: "example"
+                    source: "example"
+                    summary: "example"
+                    content: "example"
+                    detectorId: "example"
+                    parentNotificationId: 0
+                    occurredAt: "2017-04-01T01:02:03Z"
+                    metadata:
+                      type: "AssetBaselineDeviation"
+                      baselineId: 0
+                      datatype: "example"
+                      signatureId: "example"
+                      assetId: 0
+                    firstSeenAt: "2017-04-01T01:02:03Z"
+                    lastSeenAt: "2017-05-01T01:02:03Z"
+                    severity: 0
+                    collectors:
+                    - sensorId: "example"
+                      collectorId: "example"
+                      customerId: "example"
+                    analyticEventId: "example"
+                    analyticEventIndex: "example"
+                    sourceIndex: "example"
+                    sourceIdField: "example"
+                    sourceIds:
+                    - "example"
+                    uniqueId: "example"
+                    threatInfo:
+                    - framework: "example"
+                      tactic:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                      technique:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                    intelReports:
+                    - "example"
+                    id: 0
+                    assets:
+                    - id: 0
+                      enriched: false
+                      attributes: {}
+                      createdAt: "2017-04-01T01:02:03Z"
+                      addresses:
+                      - id: 0
+                        type: "example"
+                        value: "example"
+                        networkId: "example"
+                        createdAt: "2017-04-01T01:02:03Z"
+                      directionalities:
+                      - "example"
+                      truncatedAddresses: false
+                    childNotifications:
+                    - type: "example"
+                      source: "example"
+                      summary: "example"
+                      content: "example"
+                      detectorId: "example"
+                      parentNotificationId: 0
+                      occurredAt: "2017-04-01T01:02:03Z"
+                      metadata:
+                        type: "AssetBaselineDeviation"
+                        baselineId: 0
+                        datatype: "example"
+                        signatureId: "example"
+                        assetId: 0
+                      firstSeenAt: "2017-04-01T01:02:03Z"
+                      lastSeenAt: "2017-05-01T01:02:03Z"
+                      severity: 0
+                      collectors:
+                      - sensorId: "example"
+                        collectorId: "example"
+                        customerId: "example"
+                      analyticEventId: "example"
+                      analyticEventIndex: "example"
+                      sourceIndex: "example"
+                      sourceIdField: "example"
+                      sourceIds:
+                      - "example"
+                      uniqueId: "example"
+                      threatInfo:
+                      - framework: "example"
+                        tactic:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                        technique:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                      intelReports:
+                      - "example"
+                    createdAt: "2017-04-01T01:02:03Z"
+                    updatedAt: "2017-04-01T01:02:03Z"
+                    count: 1
+                    originalSeverity: 0
+                    matchedRuleId: 0
+                    matchedRuleIds:
+                    - 0
+                    reviewed: false
+                    retained: false
+                    mutedUntil: "2017-04-01T01:02:03Z"
+                    state: "example"
+                    detectionQuads:
+                    - "example"
+                    packetCapture:
+                      state: "example"
+                      file:
+                        id: 0
+                        hash:
+                          sha256: "example"
+                        links:
+                          metadata: "example"
+                          content: "example"
+                    fileIds:
+                    - "example"
+                    conversations:
+                    - tag: "example"
+                      detectedAt: "2020-04-01T13:02:28Z"
+                      sourceAssetId: 0
+                      destinationAssetId: 0
+                      sourceAddressId: 0
+                      destinationAddressId: 0
+                      sourceAddressValue: "example"
+                      destinationAddressValue: "example"
+                      protocols:
+                      - "example"
+                      sourcePorts:
+                      - port: 0
+                        transportProtocol: "example"
+                      destinationPorts:
+                      - port: 0
+                        transportProtocol: "example"
+                      otherPorts:
+                      - port: 0
+                        transportProtocol: "example"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+    put:
+      operationId: "updateNotification"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:update"
+      summary: "Update a notification"
+      description: "Requester must have \"notification:update\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the notification"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationUpdateRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    type: "example"
+                    source: "example"
+                    summary: "example"
+                    content: "example"
+                    detectorId: "example"
+                    parentNotificationId: 0
+                    occurredAt: "2017-04-01T01:02:03Z"
+                    metadata:
+                      type: "AssetBaselineDeviation"
+                      baselineId: 0
+                      datatype: "example"
+                      signatureId: "example"
+                      assetId: 0
+                    firstSeenAt: "2017-04-01T01:02:03Z"
+                    lastSeenAt: "2017-05-01T01:02:03Z"
+                    severity: 0
+                    collectors:
+                    - sensorId: "example"
+                      collectorId: "example"
+                      customerId: "example"
+                    analyticEventId: "example"
+                    analyticEventIndex: "example"
+                    sourceIndex: "example"
+                    sourceIdField: "example"
+                    sourceIds:
+                    - "example"
+                    uniqueId: "example"
+                    threatInfo:
+                    - framework: "example"
+                      tactic:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                      technique:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                    intelReports:
+                    - "example"
+                    id: 0
+                    assets:
+                    - id: 0
+                      enriched: false
+                      attributes: {}
+                      createdAt: "2017-04-01T01:02:03Z"
+                      addresses:
+                      - id: 0
+                        type: "example"
+                        value: "example"
+                        networkId: "example"
+                        createdAt: "2017-04-01T01:02:03Z"
+                      directionalities:
+                      - "example"
+                      truncatedAddresses: false
+                    childNotifications:
+                    - type: "example"
+                      source: "example"
+                      summary: "example"
+                      content: "example"
+                      detectorId: "example"
+                      parentNotificationId: 0
+                      occurredAt: "2017-04-01T01:02:03Z"
+                      metadata:
+                        type: "AssetBaselineDeviation"
+                        baselineId: 0
+                        datatype: "example"
+                        signatureId: "example"
+                        assetId: 0
+                      firstSeenAt: "2017-04-01T01:02:03Z"
+                      lastSeenAt: "2017-05-01T01:02:03Z"
+                      severity: 0
+                      collectors:
+                      - sensorId: "example"
+                        collectorId: "example"
+                        customerId: "example"
+                      analyticEventId: "example"
+                      analyticEventIndex: "example"
+                      sourceIndex: "example"
+                      sourceIdField: "example"
+                      sourceIds:
+                      - "example"
+                      uniqueId: "example"
+                      threatInfo:
+                      - framework: "example"
+                        tactic:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                        technique:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                      intelReports:
+                      - "example"
+                    createdAt: "2017-04-01T01:02:03Z"
+                    updatedAt: "2017-04-01T01:02:03Z"
+                    count: 1
+                    originalSeverity: 0
+                    matchedRuleId: 0
+                    matchedRuleIds:
+                    - 0
+                    reviewed: false
+                    retained: false
+                    mutedUntil: "2017-04-01T01:02:03Z"
+                    state: "example"
+                    detectionQuads:
+                    - "example"
+                    packetCapture:
+                      state: "example"
+                      file:
+                        id: 0
+                        hash:
+                          sha256: "example"
+                        links:
+                          metadata: "example"
+                          content: "example"
+                    fileIds:
+                    - "example"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+      x-code-samples:
+      - lang: "Full Example"
+        source: "{\n  \"reviewed\": true\n}\n"
+      - lang: "Minimal Example (No-Op)"
+        source: "{\n}\n"
+    delete:
+      operationId: "deleteNotification"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "system"
+      summary: "Delete a notification"
+      description: "Delete the notification with the specified id"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the notification to delete"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    type: "example"
+                    source: "example"
+                    summary: "example"
+                    content: "example"
+                    detectorId: "example"
+                    parentNotificationId: 0
+                    occurredAt: "2017-04-01T01:02:03Z"
+                    metadata:
+                      type: "AssetBaselineDeviation"
+                      baselineId: 0
+                      datatype: "example"
+                      signatureId: "example"
+                      assetId: 0
+                    firstSeenAt: "2017-04-01T01:02:03Z"
+                    lastSeenAt: "2017-05-01T01:02:03Z"
+                    severity: 0
+                    collectors:
+                    - sensorId: "example"
+                      collectorId: "example"
+                      customerId: "example"
+                    analyticEventId: "example"
+                    analyticEventIndex: "example"
+                    sourceIndex: "example"
+                    sourceIdField: "example"
+                    sourceIds:
+                    - "example"
+                    uniqueId: "example"
+                    threatInfo:
+                    - framework: "example"
+                      tactic:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                      technique:
+                        id: "example"
+                        name: "example"
+                        reference: "example"
+                    intelReports:
+                    - "example"
+                    id: 0
+                    assets:
+                    - id: 0
+                      enriched: false
+                      attributes: {}
+                      createdAt: "2017-04-01T01:02:03Z"
+                      addresses:
+                      - id: 0
+                        type: "example"
+                        value: "example"
+                        networkId: "example"
+                        createdAt: "2017-04-01T01:02:03Z"
+                      directionalities:
+                      - "example"
+                      truncatedAddresses: false
+                    childNotifications:
+                    - type: "example"
+                      source: "example"
+                      summary: "example"
+                      content: "example"
+                      detectorId: "example"
+                      parentNotificationId: 0
+                      occurredAt: "2017-04-01T01:02:03Z"
+                      metadata:
+                        type: "AssetBaselineDeviation"
+                        baselineId: 0
+                        datatype: "example"
+                        signatureId: "example"
+                        assetId: 0
+                      firstSeenAt: "2017-04-01T01:02:03Z"
+                      lastSeenAt: "2017-05-01T01:02:03Z"
+                      severity: 0
+                      collectors:
+                      - sensorId: "example"
+                        collectorId: "example"
+                        customerId: "example"
+                      analyticEventId: "example"
+                      analyticEventIndex: "example"
+                      sourceIndex: "example"
+                      sourceIdField: "example"
+                      sourceIds:
+                      - "example"
+                      uniqueId: "example"
+                      threatInfo:
+                      - framework: "example"
+                        tactic:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                        technique:
+                          id: "example"
+                          name: "example"
+                          reference: "example"
+                      intelReports:
+                      - "example"
+                    createdAt: "2017-04-01T01:02:03Z"
+                    updatedAt: "2017-04-01T01:02:03Z"
+                    count: 1
+                    originalSeverity: 0
+                    matchedRuleId: 0
+                    matchedRuleIds:
+                    - 0
+                    reviewed: false
+                    retained: false
+                    mutedUntil: "2017-04-01T01:02:03Z"
+                    state: "example"
+                    detectionQuads:
+                    - "example"
+                    packetCapture:
+                      state: "example"
+                      file:
+                        id: 0
+                        hash:
+                          sha256: "example"
+                        links:
+                          metadata: "example"
+                          content: "example"
+                    fileIds:
+                    - "example"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not found"
+  /api/v2/notification/{id}/children:
+    put:
+      operationId: "updateNotificationChildren"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:update"
+      summary: "Update a notification's children"
+      description: "Requester must have \"notification:update\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the parent notification"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationUpdateRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "integer"
+                format: "int64"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+      x-code-samples:
+      - lang: "Full Example"
+        source: "{\n  \"reviewed\": true\n}\n"
+      - lang: "Minimal Example (No-Op)"
+        source: "{\n}\n"
+  /api/v2/notification/stats:
+    get:
+      operationId: "getNotificationStats"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Get stats of notifications"
+      description: "Requester must have \"notification:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "groupBy"
+        in: "query"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/NotificationGroupBy"
+        style: "form"
+        explode: true
+        description: "What fields to group on; can contain multiple comma-separated\
+          \ fields per parameter"
+      - $ref: "#/components/parameters/NotificationFilter"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/StatsBin"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                  - {}
+    post:
+      operationId: "postNotificationStats"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:read"
+      summary: "Get stats of notifications (alternative)"
+      description: "Same as 'GET /api/v2/notification/stats', but passing request\
+        \ criteria in a JSON request body.\n\nRequester must have \"notification:read\"\
+        \ privilege.\n"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationStatsRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/StatsBin"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                  - {}
+  /api/v2/notification/review:
+    put:
+      operationId: "reviewNotifications"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "notification:update"
+      summary: "Set notifications as reviewed"
+      description: "Requester must have \"notification:update\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "ids"
+        in: "query"
+        required: false
+        schema:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Id"
+        style: "form"
+      - name: "reviewed"
+        in: "query"
+        schema:
+          type: "boolean"
+        required: true
+      x-manual-receive-body: true
+      requestBody:
+        $ref: "#/components/requestBodies/BulkReviewRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: "integer"
+                format: "int64"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+  /api/v2/notification/fromPrometheusAlert:
+    post:
+      operationId: "fromPrometheusAlert"
+      tags:
+      - "Notifications"
+      summary: "Create a notification from Prometheus alert manager webhook"
+      description: "Create a notification from Prometheus alert manager webhook"
+      requestBody:
+        $ref: "#/components/requestBodies/PrometheusAlertManagerWebhookBody"
+      responses:
+        "200":
+          description: "Success"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+  /api/v2/notification/republish:
+    post:
+      operationId: "republishNotifications"
+      tags:
+      - "Notifications"
+      x-requires-privileges:
+      - "system"
+      summary: "Republish notifications"
+      description: "Requester must have \"system\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - $ref: "#/components/parameters/NotificationFilter"
+      requestBody:
+        $ref: "#/components/requestBodies/RepublishNotificationsRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepublishResponse"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    notifications: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v2/notificationCreationRule:
+    post:
+      operationId: "createNotificationCreationRule"
+      tags:
+      - "Notification Creation Rules"
+      x-requires-privileges:
+      - "notification:rule:manage"
+      summary: "Create a new rule"
+      description: "Requester must have \"notification:rule:manage\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationCreationRuleCreateRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRule"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    criteria: "example"
+                    description: "example"
+                    order: 0
+                    overrideSeverity: 0
+                    actionIds:
+                    - 0
+                    expiresAt: "2017-04-01T01:02:03Z"
+                    internal: false
+                    update:
+                      mutedUntil: "2017-04-01T01:02:03Z"
+                      reviewed: false
+                      retained: false
+                      parentNotificationId: 0
+                      state: "example"
+                    id: 0
+                    drop: false
+                    matchedCounts:
+                      bins:
+                      - count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                      total:
+                        count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                    stopProcessing: false
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+      x-code-samples:
+      - lang: "Full Example"
+        source: "{\n  \"order\": 50,\n  \"criteria\": \"type!=Alert\",\n  \"description\"\
+          : \"some filter\",\n  \"actionIds\": [56, 32],\n  \"overrideSeverity\":\
+          \ 3,\n  \"drop\": false\n}\n"
+      - lang: "Minimal Example"
+        source: "{\n  \"order\": 50,\n  \"criteria\": \"type!=Alert\",\n  \"drop\"\
+          : false\n}\n"
+    get:
+      operationId: "getNotificationCreationRulePage"
+      tags:
+      - "Notification Creation Rules"
+      x-requires-privileges:
+      - "notification:rule:read"
+      summary: "Get a page of rules"
+      description: "Requester must have \"notification:rule:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageSize"
+      - name: "sorts"
+        in: "query"
+        schema:
+          type: "string"
+        description: "Format: Comma-separated sets of a sort field, colon, and 'a'\
+          \ (for ascending) or 'd' (for descending).\n\nExample: 'order:a,overrideSeverity:d'\n\
+          \nValues: order, overrideSeverity, drop, stopProcessing, description, expiresAt\n"
+      - name: "sortField"
+        in: "query"
+        schema:
+          type: "string"
+          enum:
+          - "order"
+          - "overrideSeverity"
+          - "drop"
+          - "stopProcessing"
+          - "description"
+          - "expiresAt"
+      - $ref: "#/components/parameters/SortDescending"
+      - $ref: "#/components/parameters/LimitTotalCount"
+      - name: "filter"
+        in: "query"
+        schema:
+          type: "string"
+          format: "FIQL"
+        description: "A filter string in FIQL format. See relevant information on\
+          \ FIQL Operators and Notification Creation Rule Selectors at the top of\
+          \ the page."
+      - name: "countsDateType"
+        in: "query"
+        schema:
+          type: "string"
+          enum:
+          - "createdAt"
+          - "occurredAt"
+        description: "Type of date to filter and bin on."
+      - name: "countsBinSize"
+        in: "query"
+        schema:
+          type: "string"
+          enum:
+          - "month"
+          - "day"
+          - "hour"
+        description: "Size of bins. If not specified, no time binning is performed.\
+          \ Ignored if \"countsDateType\" is not specified."
+      - name: "countsTimeRangeFrom"
+        in: "query"
+        schema:
+          type: "string"
+          format: "date-time"
+          example: "2017-04-01T01:02:03Z"
+        description: "Filters matched notifications by time range. Ignored if \"countsDateType\"\
+          \ or \"countsTimeRangeTo\" are not specified. Required if \"countsBinSize\"\
+          \ is specified."
+      - name: "countsTimeRangeTo"
+        in: "query"
+        schema:
+          type: "string"
+          format: "date-time"
+          example: "2017-04-01T01:02:03Z"
+        description: "Filters matched notifications by time range. Ignored if \"countsDateType\"\
+          \ or \"countsTimeRangeFrom\" are not specified. Required if \"countsBinSize\"\
+          \ is specified. Can only be 24 hours, 31 days, or 24 months after \"countsTimeRangeFrom\"\
+          \ if \"countsBinSize\" is \"hour\", \"day\", or \"month\" respectively"
+      responses:
+        "200":
+          $ref: "#/components/responses/NotificationCreationRulePageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v2/notificationCreationRule/{id}:
+    get:
+      operationId: "getNotificationCreationRule"
+      tags:
+      - "Notification Creation Rules"
+      x-requires-privileges:
+      - "notification:rule:read"
+      summary: "Get a rule"
+      description: "Requester must have \"notification:rule:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the rule"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      - name: "countsDateType"
+        in: "query"
+        schema:
+          type: "string"
+          enum:
+          - "createdAt"
+          - "occurredAt"
+        description: "Type of date to filter and bin on."
+      - name: "countsBinSize"
+        in: "query"
+        schema:
+          type: "string"
+          enum:
+          - "month"
+          - "day"
+          - "hour"
+        description: "Size of bins. If not specified, no time binning is performed.\
+          \ Ignored if \"countsDateType\" is not specified."
+      - name: "countsTimeRangeFrom"
+        in: "query"
+        schema:
+          type: "string"
+          format: "date-time"
+          example: "2017-04-01T01:02:03Z"
+        description: "Filters matched notifications by time range. Ignored if \"countsDateType\"\
+          \ or \"countsTimeRangeTo\" are not specified. Required if \"countsBinSize\"\
+          \ is specified."
+      - name: "countsTimeRangeTo"
+        in: "query"
+        schema:
+          type: "string"
+          format: "date-time"
+          example: "2017-04-01T01:02:03Z"
+        description: "Filters matched notifications by time range. Ignored if \"countsDateType\"\
+          \ or \"countsTimeRangeFrom\" are not specified. Required if \"countsBinSize\"\
+          \ is specified. Can only be 24 hours, 31 days, or 24 months after \"countsTimeRangeFrom\"\
+          \ if \"countsBinSize\" is \"hour\", \"day\", or \"month\" respectively"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRule"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    criteria: "example"
+                    description: "example"
+                    order: 0
+                    overrideSeverity: 0
+                    actionIds:
+                    - 0
+                    expiresAt: "2017-04-01T01:02:03Z"
+                    internal: false
+                    update:
+                      mutedUntil: "2017-04-01T01:02:03Z"
+                      reviewed: false
+                      retained: false
+                      parentNotificationId: 0
+                      state: "example"
+                    id: 0
+                    drop: false
+                    matchedCounts:
+                      bins:
+                      - count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                      total:
+                        count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                    stopProcessing: false
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+    put:
+      operationId: "updateNotificationCreationRule"
+      tags:
+      - "Notification Creation Rules"
+      x-requires-privileges:
+      - "notification:rule:manage"
+      summary: "Update a rule"
+      description: "Requester must have \"notification:rule:manage\" privilege."
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationCreationRuleUpdateRequestBody"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the rule"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRule"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    criteria: "example"
+                    description: "example"
+                    order: 0
+                    overrideSeverity: 0
+                    actionIds:
+                    - 0
+                    expiresAt: "2017-04-01T01:02:03Z"
+                    internal: false
+                    update:
+                      mutedUntil: "2017-04-01T01:02:03Z"
+                      reviewed: false
+                      retained: false
+                      parentNotificationId: 0
+                      state: "example"
+                    id: 0
+                    drop: false
+                    matchedCounts:
+                      bins:
+                      - count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                      total:
+                        count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                    stopProcessing: false
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+      x-code-samples:
+      - lang: "Full Example"
+        source: "{\n  \"order\": 50,\n  \"description\": \"some filter\",\n  \"actionIds\"\
+          : [56, 32],\n  \"overrideSeverity\": 3,\n  \"drop\": false\n}\n"
+      - lang: "Minimal Example (No-Op)"
+        source: "{\n}\n"
+    delete:
+      operationId: "deleteNotificationCreationRule"
+      tags:
+      - "Notification Creation Rules"
+      x-requires-privileges:
+      - "notification:rule:manage"
+      summary: "Delete a rule"
+      description: "Requester must have \"notification:rule:manage\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the rule"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRule"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    criteria: "example"
+                    description: "example"
+                    order: 0
+                    overrideSeverity: 0
+                    actionIds:
+                    - 0
+                    expiresAt: "2017-04-01T01:02:03Z"
+                    internal: false
+                    update:
+                      mutedUntil: "2017-04-01T01:02:03Z"
+                      reviewed: false
+                      retained: false
+                      parentNotificationId: 0
+                      state: "example"
+                    id: 0
+                    drop: false
+                    matchedCounts:
+                      bins:
+                      - count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                      total:
+                        count: 0
+                        timeRange:
+                          from: "example"
+                          to: "example"
+                    stopProcessing: false
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+  /api/v2/notificationCreationRuleAction:
+    post:
+      operationId: "createNotificationCreationRuleAction"
+      tags:
+      - "Notification Creation Rule Actions"
+      x-requires-privileges:
+      - "notification:rule:manage"
+      summary: "Create a new action"
+      description: "Requester must have \"notification:rule:manage\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationCreationRuleActionCreateRequestBody"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRuleAction"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    description: "example"
+                    enabled: false
+                    parameters:
+                      type: "webhook"
+                      url: "example"
+                      method: "example"
+                      headers: {}
+                    id: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+      x-code-samples:
+      - lang: "Full Example"
+        source: "{\n  \"type\": \"actionType\",\n  \"description\": \"An creation\
+          \ action\",\n  \"enabled\": true,\n  \"parameters\": {\n    \"property1\"\
+          : \"blah\",\n    \"property2\": \"blahblah\"\n  }\n}\n"
+      - lang: "Minimal Example"
+        source: "{\n  \"type\": \"actionType\",\n  \"enabled\": false\n}\n"
+    get:
+      operationId: "getNotificationCreationRuleActionPage"
+      tags:
+      - "Notification Creation Rule Actions"
+      x-requires-privileges:
+      - "notification:rule:read"
+      summary: "Get a page of rule actions"
+      description: "Requester must have \"notification:rule:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageSize"
+      - name: "sorts"
+        in: "query"
+        schema:
+          type: "string"
+        description: "Format: Comma-separated sets of a sort field, colon, and 'a'\
+          \ (for ascending) or 'd' (for descending).\n\nExample: 'type:a,id:d'\n\n\
+          Values: id, description, enabled, type\n"
+      - name: "sortField"
+        in: "query"
+        schema:
+          type: "string"
+          enum:
+          - "id"
+          - "description"
+          - "enabled"
+          - "type"
+      - $ref: "#/components/parameters/SortDescending"
+      - $ref: "#/components/parameters/LimitTotalCount"
+      - name: "filter"
+        in: "query"
+        schema:
+          type: "string"
+          format: "FIQL"
+        description: "A filter string in FIQL format. See relevant information on\
+          \ FIQL Operators and Notification Creation Rule Action Selectors at the\
+          \ top of the page."
+      responses:
+        "200":
+          $ref: "#/components/responses/NotificationCreationRuleActionPageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v2/notificationCreationRuleAction/{id}:
+    get:
+      operationId: "getNotificationCreationRuleAction"
+      tags:
+      - "Notification Creation Rule Actions"
+      x-requires-privileges:
+      - "notification:rule:read"
+      summary: "Get an action by id"
+      description: "Requester must have \"notification:rule:read\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the action"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRuleAction"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    description: "example"
+                    enabled: false
+                    parameters:
+                      type: "webhook"
+                      url: "example"
+                      method: "example"
+                      headers: {}
+                    id: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+    put:
+      operationId: "updateNotificationCreationRuleAction"
+      tags:
+      - "Notification Creation Rule Actions"
+      x-requires-privileges:
+      - "notification:rule:manage"
+      summary: "Update an action"
+      description: "Requester must have \"notification:rule:manage\" privilege."
+      requestBody:
+        $ref: "#/components/requestBodies/NotificationCreationRuleActionUpdateRequestBody"
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the action"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRuleAction"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    description: "example"
+                    enabled: false
+                    parameters:
+                      type: "webhook"
+                      url: "example"
+                      method: "example"
+                      headers: {}
+                    id: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+      x-code-samples:
+      - lang: "Full Example"
+        source: "{\n  \"order\": 50,\n  \"description\": \"some filter\",\n  \"actionIds\"\
+          : [56, 32],\n  \"overrideSeverity\": 3,\n  \"drop\": false\n}\n"
+      - lang: "Minimal Example (No-Op)"
+        source: "{\n}\n"
+    delete:
+      operationId: "deleteNotificationCreationRuleAction"
+      tags:
+      - "Notification Creation Rule Actions"
+      x-requires-privileges:
+      - "notification:rule:manage"
+      summary: "Delete an action"
+      description: "Requester must have \"notification:rule:manage\" privilege."
+      parameters:
+      - $ref: "#/components/parameters/X-Username"
+      - $ref: "#/components/parameters/X-Privileges"
+      - name: "id"
+        in: "path"
+        description: "ID of the action"
+        required: true
+        schema:
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCreationRuleAction"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value:
+                    description: "example"
+                    enabled: false
+                    parameters:
+                      type: "webhook"
+                      url: "example"
+                      method: "example"
+                      headers: {}
+                    id: 0
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+        "404":
+          description: "Not Found"
+components:
+  parameters:
+    LimitTotalCount:
+      name: "limitTotalCount"
+      in: "query"
+      schema:
+        type: "integer"
+    NotificationFilter:
+      name: "filter"
+      in: "query"
+      schema:
+        $ref: "#/components/schemas/NotificationFilter"
+    NotificationSortField:
+      name: "sortField"
+      in: "query"
+      schema:
+        type: "string"
+        enum:
+        - "id"
+        - "source"
+        - "type"
+        - "createdAt"
+        - "updatedAt"
+        - "occurredAt"
+        - "severity"
+        - "reviewed"
+        - "retained"
+        - "detectorId"
+        - "firstSourceIp"
+        - "firstDestinationIp"
+        - "firstOtherIp"
+        - "firstSourceHostname"
+        - "firstDestinationHostname"
+        - "firstOtherHostname"
+        - "threatFramework"
+        - "threatTacticId"
+        - "threatTacticName"
+        - "threatTechniqueId"
+        - "threatTechniqueName"
+        - "lastSeenAt"
+        - "packetCaptureState"
+    NotificationSorts:
+      name: "sorts"
+      in: "query"
+      schema:
+        type: "string"
+      description: "Format: Comma-separated sets of a sort field, colon, and 'a' (for\
+        \ ascending) or 'd' (for descending).\n\nExample: 'source:a,createdAt:d'\n\
+        \nValues: id, source, type, createdAt, updatedAt, occurredAt, severity, reviewed,\
+        \ retained, detectorId, firstSourceIp, firstDestinationIp, firstOtherIp, lastSeenAt\n"
+    Offset:
+      name: "offset"
+      in: "query"
+      schema:
+        type: "integer"
+        format: "int64"
+        minimum: 1
+    PageNumber:
+      name: "pageNumber"
+      in: "query"
+      schema:
+        type: "integer"
+        format: "int64"
+        minimum: 1
+    PageSize:
+      name: "pageSize"
+      in: "query"
+      schema:
+        type: "integer"
+        format: "int64"
+        minimum: 1
+    SortDescending:
+      name: "sortDescending"
+      in: "query"
+      schema:
+        type: "boolean"
+    X-Privileges:
+      name: "X-Privileges"
+      in: "header"
+      required: false
+      description: "Comma-separated privilege IDs of requester. Provided automatically\
+        \ when accessed via Gateway Service."
+      schema:
+        type: "string"
+    X-Username:
+      name: "X-Username"
+      in: "header"
+      required: false
+      description: "Username of requester. Provided automatically when accessed via\
+        \ Gateway Service."
+      schema:
+        type: "string"
+  requestBodies:
+    BulkReviewRequestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/BulkReviewRequestBodyData"
+    NotificationCreateRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationCreate"
+    NotificationCreationRuleActionCreateRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationCreationRuleActionData"
+    NotificationCreationRuleActionUpdateRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: "#/components/schemas/NotificationCreationRuleActionUpdate"
+            - type: "object"
+              properties:
+                description:
+                  type: "string"
+                  description: "Action description"
+                enabled:
+                  type: "boolean"
+                  description: "Whether the action is enabled."
+                parameters:
+                  type: "object"
+                  additionalProperties: true
+    NotificationCreationRuleCreateRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationCreationRuleCreate"
+    NotificationCreationRuleUpdateRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationCreationRuleUpdate"
+    NotificationPageRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationPageRequest"
+    NotificationStatsRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationStatsRequest"
+    NotificationUpdateRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationUpdate"
+    PrometheusAlertManagerWebhookBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PrometheusAlertManagerWebhookBodyData"
+    RepublishNotificationsRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              batchSize:
+                type: "integer"
+                description: "Batch size for the republish job"
+              jobId:
+                type: "string"
+                description: "A job id for correlating the request with republish\
+                  \ events"
+  responses:
+    NotificationCreationRuleActionPageResponse:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationCreationRuleActionPage"
+    NotificationCreationRulePageResponse:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationCreationRulePage"
+    NotificationPageResponse:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotificationPage"
+  schemas:
+    Address:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the address"
+        type:
+          type: "string"
+          description: "Type of the address"
+        value:
+          type: "string"
+          description: "Address value, to be interpreted according to the type"
+        networkId:
+          type: "string"
+          description: "Id of the network of the address"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          description: "Time the address was created"
+          example: "2017-04-01T01:02:03Z"
+      required:
+      - "id"
+      - "type"
+      - "value"
+    ApplicationValueBaselineItem:
+      allOf:
+      - $ref: "#/components/schemas/Metadata"
+      - type: "object"
+        properties:
+          sourceAssetId:
+            $ref: "#/components/schemas/Id"
+          destinationAssetId:
+            $ref: "#/components/schemas/Id"
+          field:
+            type: "string"
+          value:
+            type: "string"
+          protocol:
+            type: "string"
+        required:
+        - "sourceAssetId"
+        - "destinationAssetId"
+        - "field"
+        - "value"
+        - "protocol"
+    Asset:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the asset"
+        enriched:
+          type: "boolean"
+          description: "Indicates whether the asset has already been enriched by looking\
+            \ up its proeprties from AIS. Enriched assets should have \"attributes\"\
+            ,  \"createdAt\" and \"addresses\" properties populated"
+          default: true
+        attributes:
+          $ref: "#/components/schemas/AssetAttributes"
+          description: "Asset attributes"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          description: "Time the asset was created"
+          example: "2017-04-01T01:02:03Z"
+        addresses:
+          type: "array"
+          description: "Addresses associated with the asset"
+          items:
+            $ref: "#/components/schemas/Address"
+        directionalities:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Directionality"
+        truncatedAddresses:
+          type: "boolean"
+          description: "Indicates whether the array of assets has been truncated down\
+            \ to the first 10 items"
+      required:
+      - "id"
+      - "enriched"
+      - "directionalities"
+    AssetAttributes:
+      type: "object"
+      additionalProperties: true
+    AssetBaselineItem:
+      allOf:
+      - $ref: "#/components/schemas/Metadata"
+      - type: "object"
+        properties:
+          assetId:
+            $ref: "#/components/schemas/Id"
+            description: "ID of newly discovered asset"
+        required:
+        - "assetId"
+    AssetIdAndDirectionality:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the asset"
+        directionalities:
+          type: "array"
+          description: "directions the assets are associated with"
+          items:
+            $ref: "#/components/schemas/Directionality"
+      required:
+      - "id"
+    AssetObservationBaselineItem:
+      allOf:
+      - $ref: "#/components/schemas/Metadata"
+      - type: "object"
+        properties:
+          assetId:
+            $ref: "#/components/schemas/Id"
+        required:
+        - "assetId"
+    AssetProtocolBaselineItem:
+      allOf:
+      - $ref: "#/components/schemas/Metadata"
+      - type: "object"
+        properties:
+          assetId:
+            $ref: "#/components/schemas/Id"
+            description: "ID of asset associated with new protocol"
+          protocol:
+            type: "string"
+            description: "New protocol communicated by asset"
+        required:
+        - "assetId"
+        - "protocol"
+    BaselineItemSignatureId:
+      type: "string"
+      description: "The baseline signature this item is from"
+      enum:
+      - "Asset"
+      - "AssetProtocol"
+      - "Communication"
+      - "ApplicationValue"
+    BulkReviewRequestBodyData:
+      type: "object"
+      properties:
+        ids:
+          type: "array"
+          items:
+            type: "integer"
+            format: "int64"
+          description: "Set of notification ids to be updated"
+    Collector:
+      type: "object"
+      properties:
+        sensorId:
+          type: "string"
+        collectorId:
+          type: "string"
+        customerId:
+          type: "string"
+      required:
+      - "sensorId"
+      - "collectorId"
+    CommunicationBaselineItem:
+      allOf:
+      - $ref: "#/components/schemas/Metadata"
+      - type: "object"
+        properties:
+          sourceAssetId:
+            $ref: "#/components/schemas/Id"
+          destinationAssetId:
+            $ref: "#/components/schemas/Id"
+          originatorAssetId:
+            $ref: "#/components/schemas/Id"
+          protocol:
+            type: "string"
+        required:
+        - "sourceAssetId"
+        - "destinationAssetId"
+        - "originatorAssetId"
+        - "protocol"
+    Conversation:
+      type: "object"
+      properties:
+        tag:
+          type: "string"
+        detectedAt:
+          type: "string"
+          format: "date-time"
+          description: "Time the conversation was detected"
+          example: "2020-04-01T13:02:28Z"
+        sourceAssetId:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the source asset"
+        destinationAssetId:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the destination asset"
+        sourceAddressId:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the source address"
+        destinationAddressId:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the destination address"
+        sourceAddressValue:
+          type: "string"
+          description: "Value of the source address"
+        destinationAddressValue:
+          type: "string"
+          description: "Value of the destination address"
+        protocols:
+          type: "array"
+          items:
+            type: "string"
+          description: "Set application level protocols for the conversation"
+        sourcePorts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PortAndTransportProtocol"
+        destinationPorts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PortAndTransportProtocol"
+        otherPorts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PortAndTransportProtocol"
+    Directionality:
+      type: "string"
+      enum:
+      - "source"
+      - "destination"
+    EmailDigestConfiguration:
+      type: "object"
+      properties:
+        digestLength:
+          type: "string"
+          enum:
+          - "NONE"
+          description: "Frequency of email digest. Digest support is planned for the\
+            \ future, so the only acceptable value for the moment is NONE"
+      required:
+      - "digestLength"
+    EmailNotificationCreationRuleActionParameters:
+      allOf:
+      - $ref: "#/components/schemas/NotificationCreationRuleActionParameters"
+      - type: "object"
+        properties:
+          hostname:
+            type: "string"
+          port:
+            type: "integer"
+            format: "int32"
+          protocol:
+            type: "string"
+            enum:
+            - "SMTP"
+            - "SMTPS"
+            - "SMPTS"
+            - "SMTP_TLS"
+          username:
+            type: "string"
+          password:
+            type: "string"
+          from:
+            type: "string"
+          to:
+            type: "string"
+          digestConfiguration:
+            $ref: "#/components/schemas/EmailDigestConfiguration"
+        required:
+        - "to"
+    Id:
+      type: "integer"
+      format: "int64"
+    Metadata:
+      type: "object"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          AssetBaselineDeviation: "#/components/schemas/AssetBaselineItem"
+          AssetProtocolBaselineDeviation: "#/components/schemas/AssetProtocolBaselineItem"
+          CommunicationBaselineDeviation: "#/components/schemas/CommunicationBaselineItem"
+          ApplicationValueBaselineDeviation: "#/components/schemas/ApplicationValueBaselineItem"
+          PeerCommunicationBaselineDeviation: "#/components/schemas/PeerCommunicationBaselineItem"
+          NewMatchingCommunicationBaselineObservation: "#/components/schemas/NewMatchingCommunicationBaselineItem"
+          NewAssetBaselineObservation: "#/components/schemas/AssetObservationBaselineItem"
+          AssetSummary: "#/components/schemas/AssetObservationBaselineItem"
+      properties:
+        type:
+          $ref: "#/components/schemas/MetadataType"
+        baselineId:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the baseline"
+        datatype:
+          type: "string"
+        signatureId:
+          $ref: "#/components/schemas/BaselineItemSignatureId"
+      required:
+      - "type"
+      - "baselineId"
+      - "datatype"
+      - "signatureId"
+    MetadataType:
+      type: "string"
+      description: "The type of notification metadata.\n* `AssetBaselineDeviation`\
+        \ - Legacy baseline notification representing asset deviations\n* `AssetProtocolBaselineDeviation`\
+        \ - Legacy baseline notification representing protocol deviations\n* `CommunicationBaselineDeviation`\
+        \ - Legacy baseline notification representing communication deviations\n*\
+        \ `ApplicationValueBaselineDeviation` - Legacy baseline notification representing\
+        \ application value deviations\n* `PeerCommunicationBaselineDeviation` - Baseline\
+        \ notification representing communication deviation\n* `NewAssetBaselineObservation`\
+        \ - Baseline notification representing the first observation of a baseline\
+        \ asset\n* `NewMatchingCommunicationBaselineObservation` - Baseline notification\
+        \ representing the first observation of a\nmatching (non-deviating) communication\n\
+        * 'AssetSummary` - Baseline summary notification that acts as parent of other\
+        \ baseline notifications for the\nsame asset and baseline\n"
+      enum:
+      - "AssetBaselineDeviation"
+      - "AssetProtocolBaselineDeviation"
+      - "CommunicationBaselineDeviation"
+      - "ApplicationValueBaselineDeviation"
+      - "PeerCommunicationBaselineDeviation"
+      - "NewAssetBaselineObservation"
+      - "NewMatchingCommunicationBaselineObservation"
+      - "AssetSummary"
+    NewMatchingCommunicationBaselineItem:
+      allOf:
+      - $ref: "#/components/schemas/Metadata"
+      - type: "object"
+        properties:
+          observedCommunicationId:
+            $ref: "#/components/schemas/Id"
+          baselineAssetId:
+            $ref: "#/components/schemas/Id"
+          peerScopeId:
+            $ref: "#/components/schemas/Id"
+          peerAssetId:
+            $ref: "#/components/schemas/Id"
+          peerAddressId:
+            $ref: "#/components/schemas/Id"
+          protocol:
+            type: "string"
+          baselineRole:
+            type: "string"
+            enum:
+            - "CLIENT"
+            - "SERVER"
+        required:
+        - "peerScopeId"
+        - "baselineAssetId"
+        - "protocol"
+        - "baselineRole"
+    Notification:
+      allOf:
+      - $ref: "#/components/schemas/NotificationData"
+      - type: "object"
+        properties:
+          id:
+            $ref: "#/components/schemas/Id"
+            description: "ID of the notification"
+          assets:
+            type: "array"
+            description: "Assets associated with the notification"
+            items:
+              $ref: "#/components/schemas/Asset"
+          childNotifications:
+            type: "array"
+            description: "Child notifications; only present if resolveChildrenDepth\
+              \ query parameter is set"
+            items:
+              $ref: "#/components/schemas/Notification"
+          createdAt:
+            type: "string"
+            format: "date-time"
+            description: "When the notification was created"
+            example: "2017-04-01T01:02:03Z"
+          updatedAt:
+            type: "string"
+            format: "date-time"
+            description: "Most recent time the notification was updated"
+            example: "2017-04-01T01:02:03Z"
+          count:
+            type: "integer"
+            format: "int64"
+            description: "The number of times the notification has been seen"
+            example: 1
+          originalSeverity:
+            $ref: "#/components/schemas/Severity"
+          matchedRuleId:
+            type: "integer"
+            format: "int64"
+            description: "Deprecated since `stopProcessing` was added. ID of _first_\
+              \ rule the notification matched on. Use `matchedRuleIds` for the list\
+              \ of _all_ matched rules."
+            deprecated: true
+          matchedRuleIds:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+            description: "IDs of the rules that the notification request matched on."
+          reviewed:
+            type: "boolean"
+            description: "Whether the notification was reviewed"
+          retained:
+            type: "boolean"
+            description: "Whether the notification is retained regardless of retention\
+              \ policy"
+          mutedUntil:
+            type: "string"
+            format: "date-time"
+            description: "Notification muted until this date"
+            example: "2017-04-01T01:02:03Z"
+          sourceIndex:
+            type: "string"
+            description: "The Elasticsearch index containing the source id/s"
+          sourceIdField:
+            type: "string"
+            description: "The ID field name in Elasticsearch corresponding to source\
+              \ IDs"
+          sourceIds:
+            type: "array"
+            items:
+              type: "string"
+            description: "Source Elasticsearch IDS for notification"
+          state:
+            $ref: "#/components/schemas/State"
+          detectionQuads:
+            type: "array"
+            items:
+              type: "string"
+            description: "Detection Quads for the Notification Detector ID"
+          packetCapture:
+            $ref: "#/components/schemas/PacketCapture"
+            description: "Packet capture (PCAP) optionally associated with the notification"
+          fileIds:
+            type: "array"
+            items:
+              type: "string"
+            description: "File Service file IDs for files related to the notification\
+              \ (often used for Yara notifications)"
+        required:
+        - "id"
+        - "createdAt"
+        - "updatedAt"
+        - "reviewed"
+        - "retained"
+        - "state"
+    NotificationCreate:
+      allOf:
+      - $ref: "#/components/schemas/NotificationData"
+      - type: "object"
+        properties:
+          assetIds:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AssetIdAndDirectionality"
+            description: "Set of asset IDs and directions associated with the notification"
+          groups:
+            type: "array"
+            description: "information for the notification group"
+            items:
+              $ref: "#/components/schemas/NotificationGroup"
+          conversations:
+            type: "array"
+            description: "Conversations associated with the notification. If null,\
+              \ conversations shoudl be requested with \"includeConversations\""
+            items:
+              $ref: "#/components/schemas/Conversation"
+          packetCaptureFileSha256:
+            type: "string"
+            description: "Hex-encoded SHA-256 digest of a PCAP file associated with\
+              \ this notification. Used as an identifier if the sensor is tasked to\
+              \ upload the file."
+    NotificationCreationRule:
+      allOf:
+      - $ref: "#/components/schemas/NotificationCreationRuleData"
+      - type: "object"
+        properties:
+          id:
+            $ref: "#/components/schemas/Id"
+            description: "ID of the rule."
+          drop:
+            type: "boolean"
+            description: "Whether to drop a notification if it matches the rule criteria"
+          matchedCounts:
+            $ref: "#/components/schemas/TimeBinnedCounts"
+          stopProcessing:
+            type: "boolean"
+            description: "`true` indicates a match on this rule prevents later rules\
+              \ from being evaluated.  Default is `false`."
+        required:
+        - "id"
+        - "drop"
+        - "stopProcessing"
+    NotificationCreationRuleAction:
+      allOf:
+      - $ref: "#/components/schemas/NotificationCreationRuleActionData"
+      - type: "object"
+        properties:
+          id:
+            $ref: "#/components/schemas/Id"
+            description: "ID of the rule."
+        required:
+        - "id"
+    NotificationCreationRuleActionData:
+      type: "object"
+      properties:
+        description:
+          type: "string"
+          description: "Action description"
+        enabled:
+          type: "boolean"
+          description: "Whether the action is enabled."
+        parameters:
+          $ref: "#/components/schemas/NotificationCreationRuleActionParameters"
+      required:
+      - "type"
+      - "enabled"
+      - "parameters"
+    NotificationCreationRuleActionPage:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - type: "object"
+        properties:
+          content:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NotificationCreationRuleAction"
+        required:
+        - "content"
+    NotificationCreationRuleActionParameters:
+      type: "object"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          webhook: "#/components/schemas/WebhookNotificationCreationRuleActionParameters"
+          slack: "#/components/schemas/SlackNotificationCreationRuleActionParameters"
+          email: "#/components/schemas/EmailNotificationCreationRuleActionParameters"
+          requestPacketCapture: "#/components/schemas/RequestPacketCaptureNotificationCreationRuleActionParameters"
+      properties:
+        type:
+          type: "string"
+      required:
+      - "type"
+    NotificationCreationRuleActionUpdate:
+      type: "object"
+      properties:
+        description:
+          type: "string"
+          nullable: true
+          description: "Action description"
+        enabled:
+          type: "boolean"
+          description: "Whether the action is enabled."
+        parameters:
+          type: "object"
+          additionalProperties:
+            $ref: "#/components/schemas/NotificationCreationRuleActionParameters"
+    NotificationCreationRuleCreate:
+      allOf:
+      - $ref: "#/components/schemas/NotificationCreationRuleData"
+      - type: "object"
+        properties:
+          drop:
+            type: "boolean"
+            description: "Whether to drop a notification if it matches the rule criteria.\
+              \ Will default to false if unspecified. `stopProcessing` must be unset\
+              \ or `true` if `drop` is `true`."
+            default: "false"
+          stopProcessing:
+            type: "boolean"
+            description: "`true` indicates a match on this rule prevents later rules\
+              \ from being evaluated. Defaults to `false` when `drop` is `false`.\
+              \ Defaults to `true` when `drop` is `true`."
+        required:
+        - "drop"
+    NotificationCreationRuleData:
+      type: "object"
+      properties:
+        criteria:
+          type: "string"
+          format: "FIQL"
+          description: "A filter string in FIQL format. See relevant information on\
+            \ FIQL Operators and Notification Selectors at the top of the page. \"\
+            id\" and \"reviewed\" selectors can not be used here."
+        description:
+          type: "string"
+          description: "Rule description"
+        order:
+          type: "integer"
+          description: "The relative order in which to evaluate the filter against\
+            \ notifications."
+        overrideSeverity:
+          $ref: "#/components/schemas/Severity"
+          description: "The severity to set on a notification if it matches the criteria."
+        actionIds:
+          type: "array"
+          items:
+            type: "integer"
+            format: "int64"
+          description: "Set of actions"
+          default: []
+        expiresAt:
+          type: "string"
+          format: "date-time"
+          description: "Time of expiration for the rule"
+          example: "2017-04-01T01:02:03Z"
+        internal:
+          type: "boolean"
+          description: "Flag to filter out internal rules"
+          default: "false"
+        update:
+          $ref: "#/components/schemas/NotificationUpdate"
+          description: "An update to be applied to notifications matching the rule\
+            \ on creation"
+      required:
+      - "criteria"
+      - "order"
+      - "actionIds"
+      - "internal"
+    NotificationCreationRulePage:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - type: "object"
+        properties:
+          content:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NotificationCreationRule"
+        required:
+        - "content"
+    NotificationCreationRuleUpdate:
+      type: "object"
+      properties:
+        criteria:
+          type: "string"
+          format: "FIQL"
+          description: "A filter string in FIQL format. See relevant information on\
+            \ FIQL Operators and Notification Selectors at the top of the page. \"\
+            id\" and \"reviewed\" selectors can not be used here."
+        description:
+          type: "string"
+          nullable: true
+          description: "Rule description"
+        order:
+          type: "integer"
+          description: "The relative order in which to evaluate the filter against\
+            \ notifications."
+        drop:
+          type: "boolean"
+          description: "Whether to drop a notification if it matches the rule criteria."
+        overrideSeverity:
+          $ref: "#/components/schemas/SeverityNullableOptional"
+          description: "The severity to set on a notification if it matches the criteria."
+        actionIds:
+          type: "array"
+          items:
+            type: "integer"
+            format: "int64"
+          description: "Set of actions"
+        stopProcessing:
+          type: "boolean"
+          description: "`true` indicates a match on this rule will prevent later rules\
+            \ from being evaluated."
+        expiresAt:
+          type: "string"
+          format: "date-time"
+          nullable: true
+          description: "Time of expiration for the rule"
+          example: "2017-04-01T01:02:03Z"
+        internal:
+          type: "boolean"
+          description: "Flag to filter out internal rules"
+        update:
+          $ref: "#/components/schemas/NotificationUpdate"
+    NotificationData:
+      type: "object"
+      properties:
+        type:
+          type: "string"
+          description: "Type of the notification"
+        source:
+          type: "string"
+          description: "Source of the notification"
+        summary:
+          type: "string"
+          description: "Summary of the notification"
+        content:
+          type: "string"
+          description: "Content of the notification"
+        detectorId:
+          type: "string"
+          description: "Detector ID associated with the notification"
+        parentNotificationId:
+          type: "integer"
+          format: "int64"
+          description: "Set of another notification ID associated with the notification\
+            \ as a parent"
+        occurredAt:
+          type: "string"
+          format: "date-time"
+          description: "When the notification actually occurred (different than createdAt)"
+          example: "2017-04-01T01:02:03Z"
+        metadata:
+          $ref: "#/components/schemas/Metadata"
+        firstSeenAt:
+          type: "string"
+          format: "date-time"
+          description: "First time the event was seen"
+          example: "2017-04-01T01:02:03Z"
+        lastSeenAt:
+          type: "string"
+          format: "date-time"
+          description: "Most recent time the event was seen"
+          example: "2017-05-01T01:02:03Z"
+        severity:
+          $ref: "#/components/schemas/Severity"
+          description: "The severity of the notification"
+        collectors:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Collector"
+        analyticEventId:
+          type: "string"
+          description: "The Elasticsearch id of an underlying analytic event. Null\
+            \ if the notification was not created based on analytic event"
+        analyticEventIndex:
+          type: "string"
+          description: "The Elasticsearch index where the underlying analytic event\
+            \ was ingested from to create the notification. Null if the notification\
+            \ was not created based on analytic event"
+        sourceIndex:
+          type: "string"
+          description: "The Elasticsearch index containing the source id/s"
+        sourceIdField:
+          type: "string"
+          description: "The ID field name in Elasticsearch corresponding to source\
+            \ IDs"
+        sourceIds:
+          type: "array"
+          items:
+            type: "string"
+          description: "Source Elasticsearch IDS for notification"
+        uniqueId:
+          type: "string"
+          description: "unique hash of the notification metadata"
+        threatInfo:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ThreatInfo"
+          description: "Threat info associated with the notification"
+        intelReports:
+          type: "array"
+          items:
+            type: "string"
+          description: "Intel reports associated with the notification. Two alphanumeric\
+            \ characters that describe\nthe report (AA for Advisory Alert, TR for\
+            \ Threat Report, AG for Activity Group),\nfollowed by the year of release,\
+            \ followed by a two digit serial number'\nexample: [\"AA-2020-36\", TR-2023-18\"\
+            ,  \"AG-2023-02\"]\n"
+      required:
+      - "type"
+      - "source"
+      - "summary"
+      - "content"
+      - "severity"
+    NotificationDetails:
+      allOf:
+      - $ref: "#/components/schemas/Notification"
+      - type: "object"
+        properties:
+          conversations:
+            type: "array"
+            description: "Conversations associated with the notification. If null,\
+              \ conversations shoudl be requested with \"includeConversations\""
+            items:
+              $ref: "#/components/schemas/Conversation"
+            example:
+            - tag: "SSH Tunnel"
+              detectedAt: "2020-04-01T13:02:28Z"
+              sourceAssetId: 101
+              destinationAssetId: 102
+              sourceAddressId: 201
+              destinationAddressId: 202
+              sourceAddressValue: "154.24.1.113"
+              destinationAddressValue: "10.3.0.20"
+              sourcePorts:
+              - port: 34871
+                protocol: "TCP"
+              destinationPorts:
+              - port: 22
+                protocol: "TCP"
+              protocols:
+              - "SSH"
+            - tag: "DNS Zone Transfer"
+              detectedAt: "2020-04-01T13:02:32Z"
+              sourceAssetId: 102
+              destinationAssetId: 103
+              sourceAddressId: 202
+              destinationAddressId: 205
+              sourceAddressValue: "10.3.0.20"
+              destinationAddressValue: "10.37.0.103"
+              otherPorts:
+              - port: 53
+                protocol: "UDP"
+              - port: 53
+                protocol: "TCP"
+              protocols:
+              - "DNS"
+            - tag: "SSH Tunneled DNS Zone Transfer"
+              detectedAt: "2020-04-01T13:02:40Z"
+              sourceAssetId: 101
+              destinationAssetId: 103
+              sourceAddressId: 201
+              destinationAddressId: 205
+              sourceAddressValue: "154.24.1.113"
+              destinationAddressValue: "10.37.0.103"
+              sourcePorts:
+              - port: 34871
+                protocol: "TCP"
+              destinationPorts:
+              - port: 53
+                protocol: "TCP"
+              protocols:
+              - "SSH"
+              - "DNS"
+    NotificationExportField:
+      type: "string"
+      enum:
+      - "severity"
+      - "id"
+      - "occurredAt"
+      - "type"
+      - "detectionQuads"
+      - "summary"
+      - "content"
+      - "detection"
+      - "assetIds"
+      - "sourceHostname"
+      - "destinationHostname"
+      - "sourceIp"
+      - "destinationIp"
+      - "otherIp"
+      - "source"
+      - "packetCaptureState"
+      - "intelReports"
+      - "fileIds"
+      - "count"
+      - "firstSeenAt"
+      - "lastSeenAt"
+      description: "Supported field for export. Note that some values, such as `id`,\
+        \ `assetIds` and `source` are instance-specific\n"
+    NotificationFilter:
+      type: "string"
+      format: "FIQL"
+      description: "A filter string in FIQL format. See relevant information on FIQL\
+        \ Operators and Notification Selectors at the top of the page."
+    NotificationGroup:
+      type: "object"
+      properties:
+        groupId:
+          type: "string"
+          description: "unique hash of the notification group"
+        type:
+          type: "string"
+        summary:
+          type: "string"
+          description: "summary of the notification group"
+        description:
+          type: "string"
+          description: "longer description of the notification group"
+        severity:
+          $ref: "#/components/schemas/Severity"
+        detectorId:
+          type: "string"
+        moveFromExistingParent:
+          type: "boolean"
+          description: "determines whether to move the notification to group parent"
+          default: true
+        metadata:
+          $ref: "#/components/schemas/AssetObservationBaselineItem"
+      required:
+      - "groupId"
+      - "type"
+      - "summary"
+      - "moveFromExistingParent"
+    NotificationGroupBy:
+      type: "string"
+      enum:
+      - "type"
+      - "source"
+      - "severity"
+      - "assetId"
+      - "reviewed"
+      - "retained"
+      - "detectorId"
+      - "matchedRuleId"
+      - "createdAtMonth"
+      - "createdAtDay"
+      - "createdAtHour"
+      - "occurredAtMonth"
+      - "occurredAtDay"
+      - "occurredAtHour"
+      - "state"
+      - "metadataType"
+      - "metadataAssetId"
+      - "metadataSourceAssetId"
+      - "parentNotificationId"
+    NotificationPage:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - type: "object"
+        properties:
+          content:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/Notification"
+        required:
+        - "content"
+    NotificationPageRequest:
+      type: "object"
+      properties:
+        filter:
+          $ref: "#/components/schemas/NotificationFilter"
+        resolveChildrenDepth:
+          type: "integer"
+          description: "Number of steps deep to recursively resolve child notifications"
+    NotificationStatsRequest:
+      type: "object"
+      properties:
+        filter:
+          $ref: "#/components/schemas/NotificationFilter"
+        groupBys:
+          type: "array"
+          items:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/NotificationGroupBy"
+      required:
+      - "groupBys"
+    NotificationUpdate:
+      type: "object"
+      properties:
+        mutedUntil:
+          type: "string"
+          format: "date-time"
+          nullable: true
+          description: "Notification muted until this date"
+          example: "2017-04-01T01:02:03Z"
+        reviewed:
+          type: "boolean"
+          nullable: true
+          description: "Whether the notification was reviewed"
+        retained:
+          type: "boolean"
+          description: "Whether the notification should be retained regardless of\
+            \ retention policy"
+        parentNotificationId:
+          type: "integer"
+          format: "int64"
+          nullable: true
+          description: "Set of another notification ID associated with the notification\
+            \ as a parent"
+        state:
+          $ref: "#/components/schemas/State"
+    NotificationsExportRequest:
+      type: "object"
+      properties:
+        format:
+          type: "string"
+          description: "Export format"
+          enum:
+          - "csv"
+          default: "csv"
+        fields:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/NotificationExportField"
+    NotificationsMergeByUniqueIdRequest:
+      type: "object"
+      properties:
+        sourceUniqueIds:
+          type: "array"
+          items:
+            type: "string"
+        targetUniqueId:
+          type: "string"
+      required:
+      - "sourceUniqueIds"
+      - "targetUniqueId"
+    PacketCapture:
+      type: "object"
+      properties:
+        state:
+          type: "string"
+          enum:
+          - "IGNORED"
+          - "REQUESTED"
+          - "RECEIVED"
+          - "UNAVAILABLE"
+          - "DELETED"
+          description: "Status of the packet capture associated with this notification.\n\
+            * `IGNORED` - Packet capture was available for notification event.\n \
+            \ No matching notification rule was in place to request the PCAP\n  file\
+            \ from the sensor.\n* `REQUESTED` - Notification rule triggered a request\
+            \ to the sensor\n  to upload the packet capture.  PCAP file not received\
+            \ yet.\n* `RECEIVED` - Requested packet capture was uploaded to SiteStore\n\
+            \  and is available in file service.  `packetCapture.file.id` will\n \
+            \ be populated.\n* `UNAVAILABLE` - Requested packet capture was no longer\
+            \ available\n  and cannot be uploaded to SiteStore.\n* `DELETED` - Received\
+            \ packet capture is no longer available in\n  file service.  Might have\
+            \ been manually deleted or removed by\n  file retention policies.\n"
+        file:
+          $ref: "#/components/schemas/PacketCaptureFile"
+          description: "Reference to file that is ignored, requested from sensor,\
+            \ or was already transferred to SiteStore.  `file.id` will be non-null\
+            \ if state is `received`."
+      required:
+      - "state"
+    PacketCaptureFile:
+      type: "object"
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+          description: "ID of the file in file-service"
+        hash:
+          type: "object"
+          properties:
+            sha256:
+              type: "string"
+          required:
+          - "sha256"
+        links:
+          $ref: "#/components/schemas/PacketCaptureFileLinks"
+    PacketCaptureFileLinks:
+      type: "object"
+      properties:
+        metadata:
+          type: "string"
+        content:
+          type: "string"
+      required:
+      - "metadata"
+      - "content"
+    Page:
+      type: "object"
+      properties:
+        pageNumber:
+          type: "integer"
+          format: "int64"
+        pageSize:
+          type: "integer"
+          format: "int64"
+        offset:
+          type: "integer"
+          format: "int64"
+        sorts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Sort"
+        totalCount:
+          type: "integer"
+          format: "int64"
+        totalPages:
+          type: "integer"
+          format: "int64"
+        totalCountExceededLimit:
+          type: "boolean"
+    PeerCommunicationBaselineItem:
+      allOf:
+      - $ref: "#/components/schemas/Metadata"
+      - type: "object"
+        properties:
+          observedCommunicationId:
+            $ref: "#/components/schemas/Id"
+          baselineAssetId:
+            $ref: "#/components/schemas/Id"
+          peerAssetId:
+            $ref: "#/components/schemas/Id"
+          peerAddressId:
+            $ref: "#/components/schemas/Id"
+          protocol:
+            type: "string"
+          baselineRole:
+            type: "string"
+            enum:
+            - "CLIENT"
+            - "SERVER"
+        required:
+        - "baselineAssetId"
+        - "protocol"
+        - "baselineRole"
+    PortAndTransportProtocol:
+      type: "object"
+      properties:
+        port:
+          type: "integer"
+        transportProtocol:
+          type: "string"
+          description: "Transport level protocol"
+      required:
+      - "port"
+      - "transportProtocol"
+    PrometheusAlert:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+        startsAt:
+          type: "string"
+          format: "date-time"
+          example: "2017-04-01T01:02:03Z"
+        endsAt:
+          type: "string"
+          format: "date-time"
+          example: "2017-04-01T01:02:03Z"
+        labels:
+          type: "object"
+          additionalProperties: true
+        annotations:
+          type: "object"
+          additionalProperties: true
+        generatorURL:
+          type: "string"
+        fingerprint:
+          type: "string"
+    PrometheusAlertManagerWebhookBodyData:
+      type: "object"
+      properties:
+        alerts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PrometheusAlert"
+        version:
+          type: "string"
+        groupKey:
+          type: "string"
+        truncatedAlerts:
+          type: "integer"
+        status:
+          type: "string"
+        receiver:
+          type: "string"
+        groupLabels:
+          type: "object"
+          additionalProperties: true
+        commonLabels:
+          type: "object"
+          additionalProperties: true
+        commonAnnotations:
+          type: "object"
+          additionalProperties: true
+        externalURL:
+          type: "string"
+    RepublishResponse:
+      type: "object"
+      properties:
+        notifications:
+          type: "integer"
+          format: "int64"
+      required:
+      - "notifications"
+    RequestPacketCaptureNotificationCreationRuleActionParameters:
+      allOf:
+      - $ref: "#/components/schemas/NotificationCreationRuleActionParameters"
+    Severity:
+      type: "integer"
+      minimum: 0
+      maximum: 5
+    SeverityNullableOptional:
+      type: "integer"
+      nullable: true
+      minimum: 0
+      maximum: 5
+    SlackNotificationCreationRuleActionParameters:
+      allOf:
+      - $ref: "#/components/schemas/NotificationCreationRuleActionParameters"
+      - type: "object"
+        properties:
+          webhookUrl:
+            type: "string"
+          messageMvelTemplate:
+            type: "string"
+        required:
+        - "messageMvelTemplate"
+        - "webhookUrl"
+    Sort:
+      type: "object"
+      properties:
+        field:
+          type: "string"
+          description: "Field for sorting"
+        descending:
+          type: "boolean"
+          description: "Whether the sort is in descending order"
+      required:
+      - "field"
+      - "descending"
+    State:
+      type: "string"
+      description: "The current state of the notification"
+      enum:
+      - "UNRESOLVED"
+      - "ACCEPTED"
+      - "IGNORED"
+      - "MUTED"
+    StatsBin:
+      type: "object"
+      additionalProperties: {}
+    ThreatInfo:
+      type: "object"
+      properties:
+        framework:
+          type: "string"
+        tactic:
+          $ref: "#/components/schemas/ThreatInfoTactic"
+        technique:
+          $ref: "#/components/schemas/ThreatInfoTechnique"
+    ThreatInfoTactic:
+      type: "object"
+      description: "Used to model ThreatInfoTactic"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        reference:
+          type: "string"
+    ThreatInfoTechnique:
+      type: "object"
+      description: "Used to model ThreatInfoTechnique"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        reference:
+          type: "string"
+    TimeBinnedCount:
+      type: "object"
+      properties:
+        count:
+          type: "integer"
+        timeRange:
+          $ref: "#/components/schemas/TimeRange"
+    TimeBinnedCounts:
+      type: "object"
+      properties:
+        bins:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/TimeBinnedCount"
+        total:
+          $ref: "#/components/schemas/TimeBinnedCount"
+    TimeRange:
+      type: "object"
+      properties:
+        from:
+          type: "string"
+          format: "date-time"
+        to:
+          type: "string"
+          format: "date-time"
+    WebhookNotificationCreationRuleActionParameters:
+      allOf:
+      - $ref: "#/components/schemas/NotificationCreationRuleActionParameters"
+      - type: "object"
+        properties:
+          url:
+            type: "string"
+          method:
+            type: "string"
+          headers:
+            type: "object"
+            additionalProperties:
+              type: "string"
+        required:
+        - "url"
+        - "method"

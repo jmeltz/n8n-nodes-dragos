@@ -1,0 +1,1239 @@
+---
+openapi: "3.0.3"
+info:
+  version: "1.1"
+  title: "Vulnerability Management HTTP API"
+paths:
+  /api/v1/vulnerability:
+    post:
+      operationId: "getVulnerabilitiesPage"
+      summary: "Get page of vulnerabilities"
+      tags:
+      - "Vulnerabilities"
+      x-requires-privileges:
+      - "vulnerability:read"
+      requestBody:
+        $ref: "#/components/requestBodies/GetVulnerabilitiesRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/VulnerabilityPageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/setState:
+    post:
+      operationId: "setVulnerabilityState"
+      summary: "Set enabled/disabled state of one or more vulnerabilities"
+      tags:
+      - "Vulnerabilities"
+      x-requires-privileges:
+      - "system"
+      requestBody:
+        $ref: "#/components/requestBodies/SetVulnerabilityStateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/stats:
+    post:
+      operationId: "getVulnerabilityStats"
+      summary: "Get vulnerability counts by grouping on field"
+      tags:
+      - "Vulnerabilities"
+      x-requires-privileges:
+      - "vulnerability:read"
+      requestBody:
+        $ref: "#/components/requestBodies/StatsRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/StatsResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection:
+    post:
+      operationId: "getVulnerabilityDetectionsPage"
+      summary: "Get page of vulnerability detections"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "vulnerability:read"
+      requestBody:
+        $ref: "#/components/requestBodies/GetVulnerabilityDetectionsRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/VulnerabilityDetectionPageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/export:
+    post:
+      operationId: "exportVulnerabilityDetections"
+      summary: "Export (download) vulnerability detections"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "vulnerability:read"
+      x-manual-respond: true
+      requestBody:
+        $ref: "#/components/requestBodies/ExportVulnerabilityDetectionsRequest"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            text/csv:
+              schema:
+                type: "string"
+              examples:
+                generated:
+                  summary: "Auto-generated example"
+                  value: "example"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/setAssetAttributes:
+    post:
+      operationId: "setVulnerabilityDetectionsAssetAttributes"
+      summary: "Set attributes on an asset"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "asset:write"
+      requestBody:
+        $ref: "#/components/requestBodies/SetAssetAttributesRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/SetAssetAttributesResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/setDisposition:
+    post:
+      operationId: "setVulnerabilityDetectionsDisposition"
+      summary: "Set disposition of one or more vulnerability detections"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "vulnerability:update"
+      requestBody:
+        $ref: "#/components/requestBodies/SetVulnerabilityDetectionDispositionRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/update:
+    post:
+      operationId: "updateVulnerabilityDetections"
+      summary: "Update one or more vulnerability detections"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "vulnerability:update"
+      requestBody:
+        $ref: "#/components/requestBodies/VulnerabilityDetectionUpdateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/update/bulk:
+    post:
+      operationId: "updateVulnerabilityDetectionsBulk"
+      summary: "Update vulnerability detections by selector"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "vulnerability:update"
+      requestBody:
+        $ref: "#/components/requestBodies/BulkVulnerabilityDetectionUpdateRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/stats:
+    post:
+      operationId: "getVulnerabilityDetectionsStats"
+      summary: "Get vulnerability detection counts by grouping on field"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "vulnerability:read"
+      requestBody:
+        $ref: "#/components/requestBodies/StatsRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/StatsResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/republish:
+    post:
+      operationId: "republishVulnerabilityDetections"
+      summary: "Trigger republish events for vulnerability detections"
+      tags:
+      - "Vulnerability Detections"
+      x-requires-privileges:
+      - "system"
+      requestBody:
+        $ref: "#/components/requestBodies/VulnerabilityDetectionRepublishRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/RepublishResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/rules:
+    post:
+      operationId: "getVulnerabilityDetectionRulesPage"
+      summary: "Get page of vulnerability detection rules"
+      tags:
+      - "Vulnerability Detection Rules"
+      x-requires-privileges:
+      - "vulnerability:rule:read"
+      requestBody:
+        $ref: "#/components/requestBodies/GetVulnerabilityDetectionRulesRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/VulnerabilityDetectionRulePageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/rules/create:
+    post:
+      operationId: "createVulnerabilityDetectionRule"
+      summary: "Create vulnerability detection rule"
+      tags:
+      - "Vulnerability Detection Rules"
+      x-requires-privileges:
+      - "vulnerability:rule:manage"
+      requestBody:
+        $ref: "#/components/requestBodies/CreateVulnerabilityDetectionRuleRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/VulnerabilityDetectionRuleResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/rules/update:
+    post:
+      operationId: "updateVulnerabilityDetectionRule"
+      summary: "Update vulnerability detection rule"
+      tags:
+      - "Vulnerability Detection Rules"
+      x-requires-privileges:
+      - "vulnerability:rule:manage"
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateVulnerabilityDetectionRuleRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/VulnerabilityDetectionRuleResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/detection/rules/delete:
+    post:
+      operationId: "deleteVulnerabilityDetectionRule"
+      summary: "Delete vulnerability detection rule"
+      tags:
+      - "Vulnerability Detection Rules"
+      x-requires-privileges:
+      - "vulnerability:rule:manage"
+      requestBody:
+        $ref: "#/components/requestBodies/DeleteVulnerabilityDetectionRuleRequest"
+      responses:
+        "202":
+          description: "Deleted"
+        "304":
+          description: "Unable to delete"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/managementAuditLogs:
+    post:
+      operationId: "getVulnerabilityAuditLogsPage"
+      summary: "Get page of audit logs"
+      tags:
+      - "Vulnerability Management Audit Logs"
+      x-requires-privileges:
+      - "vulnerability:log:read"
+      requestBody:
+        $ref: "#/components/requestBodies/GetVulnerabilityManagementAuditLogsRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/VulnerabilityManagementAuditLogPageResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+  /api/v1/vulnerability/managementAuditLogs/stats:
+    post:
+      operationId: "getVulnerabilityAuditLogsStats"
+      summary: "Get counts by grouping on field"
+      tags:
+      - "Vulnerability Management Audit Logs"
+      x-requires-privileges:
+      - "vulnerability:log:read"
+      requestBody:
+        $ref: "#/components/requestBodies/StatsRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/StatsResponse"
+        "401":
+          description: "Unauthenticated"
+        "403":
+          description: "Unauthorized"
+components:
+  requestBodies:
+    BulkVulnerabilityDetectionUpdateRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SelectBulkVulnerabilityDetectionUpdate"
+    CreateVulnerabilityDetectionRuleRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VulnerabilityDetectionRuleCreate"
+    DeleteVulnerabilityDetectionRuleRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DeleteVulnerabilityDetectionRule"
+    ExportVulnerabilityDetectionsRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ExportVulnerabilityDetections"
+    GetVulnerabilitiesRequest:
+      required: true
+      description: "A request for a page of vulnerabilities"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginationSelector"
+    GetVulnerabilityDetectionRulesRequest:
+      required: true
+      description: "A request for a page of vulnerability detection rules"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginationSelector"
+    GetVulnerabilityDetectionsRequest:
+      required: true
+      description: "A request for a page of vulnerability detections"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginationSelector"
+    GetVulnerabilityManagementAuditLogsRequest:
+      required: true
+      description: "A request for a page of vulnerability management audit logs"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginationSelector"
+    SetAssetAttributesRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SetAssetAttributes"
+    SetVulnerabilityDetectionDispositionRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SetVulnerabilityDetectionDisposition"
+    SetVulnerabilityStateRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SetVulnerabilityState"
+    StatsRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/GroupBySelector"
+    UpdateVulnerabilityDetectionRuleRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VulnerabilityDetectionRuleUpdate"
+    VulnerabilityDetectionRepublishRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VulnerabilityDetectionRepublish"
+    VulnerabilityDetectionUpdateRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VulnerabilityDetectionUpdates"
+  responses:
+    RepublishResponse:
+      description: "Republish count"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RepublishResponse"
+    SetAssetAttributesResponse:
+      description: "Updated Asset"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Asset"
+    StatsResponse:
+      description: "Counts by grouping on field"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Stats"
+    UpdateResponse:
+      description: "Number of vulnerabilities updated and list of errored IDs"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateResponse"
+    VulnerabilityDetectionPageResponse:
+      description: "Page of vulnerability detections"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginatedVulnerabilityDetectionContent"
+    VulnerabilityDetectionRulePageResponse:
+      description: "Page vulnerability detection rules"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginatedVulnerabilityDetectionRuleContent"
+    VulnerabilityDetectionRuleResponse:
+      description: "Vulnerability Detection Rule"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/VulnerabilityDetectionRule"
+    VulnerabilityManagementAuditLogPageResponse:
+      description: "Page of Vulnerability Audit Logs"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginatedVulnerabilityAuditLog"
+    VulnerabilityPageResponse:
+      description: "Page of vulnerabilities"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PaginatedVulnerabilityContent"
+  schemas:
+    Address:
+      allOf:
+      - $ref: "#/components/schemas/AddressCoordinates"
+      - type: "object"
+        properties:
+          id:
+            type: "integer"
+            format: "int64"
+            description: "ID of address."
+          flags:
+            type: "array"
+            description: "Flags on the address."
+            items:
+              type: "string"
+              enum:
+              - "LOCAL"
+              - "MULTICAST"
+              - "RESERVED"
+          subdomains:
+            type: "array"
+            items:
+              type: "string"
+            description: "Subdomains. May only present if address is DOMAIN type."
+          collectors:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/AddressCollector"
+          createdAt:
+            type: "string"
+            format: "date-time"
+            example: "2023-03-27T05:10:02Z"
+        required:
+        - "id"
+        - "type"
+        - "networkId"
+        - "value"
+        - "createdAt"
+    AddressCollector:
+      type: "object"
+      properties:
+        customerId:
+          type: "string"
+        midpointId:
+          type: "string"
+        collectorId:
+          type: "string"
+      required:
+      - "customerId"
+      - "midpointId"
+      - "collectorId"
+    AddressCoordinates:
+      type: "object"
+      properties:
+        type:
+          $ref: "#/components/schemas/AddressType"
+        networkId:
+          type: "string"
+          description: "ID of the network the address was observed on. If null, address\
+            \ is on an unknown network."
+          example: "network ID or literal null"
+        value:
+          type: "string"
+          description: "Value of address."
+          example: "1.2.3.4"
+      required:
+      - "type"
+      - "networkId"
+      - "value"
+    AddressType:
+      type: "string"
+      description: "Type of address."
+      enum:
+      - "MAC"
+      - "IP"
+      - "HOSTNAME"
+      - "DOMAIN"
+    AnyValue: {}
+    Asset:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          description: "ID of asset."
+        oldIds:
+          type: "array"
+          items:
+            type: "integer"
+            format: "int64"
+          description: "IDs of assets that were merged into this asset."
+        attributes:
+          $ref: "#/components/schemas/AssetAttributes"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          example: "2023-03-27T05:10:02Z"
+        lastSeenAt:
+          type: "string"
+          format: "date-time"
+          example: "2023-03-27T05:10:02Z"
+        addresses:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AssetAddress"
+        timeRanges:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/UnboundedTimeRange"
+          description: "A rollup of all associated time ranges of all addresses that\
+            \ were ever associated with the asset."
+    AssetAddress:
+      allOf:
+      - $ref: "#/components/schemas/Address"
+      - type: "object"
+        properties:
+          timeRanges:
+            type: "array"
+            items:
+              $ref: "#/components/schemas/UnboundedTimeRange"
+        required:
+        - "timeRanges"
+    AssetAttributes:
+      type: "object"
+      additionalProperties: true
+      description: "attributes to set; a value of a literal null will clear the attribute"
+    Bucket:
+      type: "object"
+      properties:
+        value:
+          type: "string"
+        count:
+          type: "integer"
+          format: "int64"
+      additionalProperties: true
+      required:
+      - "value"
+      - "count"
+    BulkVulnerabilityDetectionUpdate:
+      type: "object"
+      properties:
+        reason:
+          type: "string"
+        disposition:
+          $ref: "#/components/schemas/Disposition"
+        priority:
+          $ref: "#/components/schemas/Priority"
+      required:
+      - "reason"
+    DateRangeMatcher:
+      allOf:
+      - $ref: "#/components/schemas/ValueMatcher"
+      - type: "object"
+        properties:
+          field:
+            type: "string"
+          lowerBoundInclusive:
+            type: "string"
+            format: "date-time"
+            example: "2023-03-27T05:10:07Z"
+          lowerBoundExclusive:
+            type: "string"
+            format: "date-time"
+            example: "2023-03-27T05:10:07Z"
+          higherBoundInclusive:
+            type: "string"
+            format: "date-time"
+            example: "2023-03-27T05:10:07Z"
+          higherBoundExclusive:
+            type: "string"
+            format: "date-time"
+            example: "2023-03-27T05:10:07Z"
+        required:
+        - "field"
+    DeleteVulnerabilityDetectionRule:
+      type: "object"
+      properties:
+        uuid:
+          type: "string"
+      required:
+      - "uuid"
+    Disposition:
+      type: "string"
+      enum:
+      - "Risk Accepted"
+      - "Closed"
+      - "Mitigated"
+      - "Remediated"
+      - "False Positive"
+      - "Not Set"
+    ExactMatcher:
+      allOf:
+      - $ref: "#/components/schemas/ValueMatcher"
+      - type: "object"
+        properties:
+          field:
+            type: "string"
+          exact:
+            $ref: "#/components/schemas/AnyValue"
+        required:
+        - "field"
+    ExportVulnerabilityDetections:
+      type: "object"
+      properties:
+        selector:
+          $ref: "#/components/schemas/Selector"
+        format:
+          type: "string"
+          enum:
+          - "CSV"
+          default: "CSV"
+        fieldMappings:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              exportField:
+                type: "string"
+                description: "Name of the field/column to export data as"
+              vulnField:
+                type: "string"
+                description: "Field from the vulnerability to source the data from"
+            required:
+            - "exportField"
+            - "vulnField"
+        sorts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Sort"
+      required:
+      - "format"
+      - "fieldMappings"
+    GroupBy:
+      type: "object"
+      properties:
+        field:
+          type: "string"
+        additionalProperties:
+          description: "Set of index fields to project into each returned grouping/bucket\
+            \ as additional properties using the first result from each bucket"
+          type: "array"
+          items:
+            type: "string"
+        interval:
+          description: "(Optional) Interval to bucket groups into (generates a histogram).\
+            \ Defaults to null"
+          type: "string"
+          enum:
+          - "CVSS"
+          - "AGE"
+          - "MIN"
+          - "HOUR"
+          - "DAY"
+          - "WEEK"
+          - "MONTH"
+          - "YEAR"
+      required:
+      - "field"
+    GroupBySelector:
+      type: "object"
+      properties:
+        selector:
+          $ref: "#/components/schemas/Selector"
+        groupBys:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/GroupBy"
+      required:
+      - "groupBys"
+    MatchesMatcher:
+      description: "Full-text match query."
+      allOf:
+      - $ref: "#/components/schemas/ValueMatcher"
+      - type: "object"
+        properties:
+          field:
+            type: "string"
+          matches:
+            $ref: "#/components/schemas/AnyValue"
+        required:
+        - "field"
+    Page:
+      type: "object"
+      properties:
+        pageNumber:
+          type: "integer"
+          format: "int64"
+        pageSize:
+          type: "integer"
+          format: "int64"
+        totalCount:
+          type: "integer"
+          format: "int64"
+        totalPages:
+          type: "integer"
+          format: "int64"
+    PaginatedVulnerabilityAuditLog:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - $ref: "#/components/schemas/VulnerabilityManagementAuditLogContent"
+    PaginatedVulnerabilityContent:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - $ref: "#/components/schemas/VulnerabilityContent"
+    PaginatedVulnerabilityDetectionContent:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - $ref: "#/components/schemas/VulnerabilityDetectionContent"
+    PaginatedVulnerabilityDetectionRuleContent:
+      allOf:
+      - $ref: "#/components/schemas/Page"
+      - $ref: "#/components/schemas/VulnerabilityDetectionRuleContent"
+    PaginationCriteria:
+      type: "object"
+      properties:
+        pageNumber:
+          type: "integer"
+          format: "int64"
+        pageSize:
+          type: "integer"
+          format: "int64"
+          default: 10
+        limitTotalCount:
+          type: "integer"
+          description: "an optional limit of total count to avoid counting large data\
+            \ sets"
+        sorts:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Sort"
+      required:
+      - "pageSize"
+    PaginationSelector:
+      type: "object"
+      properties:
+        selector:
+          $ref: "#/components/schemas/Selector"
+        pagination:
+          $ref: "#/components/schemas/PaginationCriteria"
+    Priority:
+      type: "string"
+      enum:
+      - "Now"
+      - "Next"
+      - "Never"
+    RangeMatcher:
+      allOf:
+      - $ref: "#/components/schemas/ValueMatcher"
+      - type: "object"
+        properties:
+          field:
+            type: "string"
+          lowerBoundInclusive:
+            type: "number"
+            format: "double"
+          lowerBoundExclusive:
+            type: "number"
+            format: "double"
+          higherBoundInclusive:
+            type: "number"
+            format: "double"
+          higherBoundExclusive:
+            type: "number"
+            format: "double"
+        required:
+        - "field"
+    RegexMatcher:
+      allOf:
+      - $ref: "#/components/schemas/ValueMatcher"
+      - type: "object"
+        properties:
+          field:
+            type: "string"
+          pattern:
+            type: "string"
+        required:
+        - "field"
+        - "pattern"
+    RepublishResponse:
+      type: "object"
+      properties:
+        count:
+          type: "integer"
+          format: "int64"
+      required:
+      - "count"
+    RuleAction:
+      type: "object"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          sendEmail: "#/components/schemas/SendEmailAction"
+          udateDisposition: "#/components/schemas/UpdateDispositionAction"
+          updateRisk: "#/components/schemas/UpdateRiskAction"
+      properties:
+        type:
+          type: "string"
+      required:
+      - "type"
+    SelectBulkVulnerabilityDetectionUpdate:
+      type: "object"
+      properties:
+        selector:
+          $ref: "#/components/schemas/Selector"
+        update:
+          $ref: "#/components/schemas/BulkVulnerabilityDetectionUpdate"
+      required:
+      - "selector"
+      - "update"
+    Selector:
+      type: "object"
+      properties:
+        idIn:
+          type: "array"
+          items:
+            type: "string"
+          description: "Filters by ID in list"
+        valueMatches:
+          $ref: "#/components/schemas/ValueMatcher"
+        anyOf:
+          type: "array"
+          description: "List of other selectors to combine as an OR; only allowed\
+            \ if no other fields specified"
+          items:
+            $ref: "#/components/schemas/Selector"
+        allOf:
+          type: "array"
+          description: "List of other selectors to combine as an AND; only allowed\
+            \ if no other fields specified"
+          items:
+            $ref: "#/components/schemas/Selector"
+        noneOf:
+          type: "array"
+          description: "List of other selectors to combine as a NOT; only allowed\
+            \ if no other fields specified"
+          items:
+            $ref: "#/components/schemas/Selector"
+    SendEmailAction:
+      allOf:
+      - $ref: "#/components/schemas/RuleAction"
+      - type: "object"
+        properties:
+          email:
+            type: "string"
+          subject:
+            type: "string"
+          body:
+            type: "string"
+        required:
+        - "email"
+        - "subject"
+        - "body"
+    SetAssetAttributes:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        attributes:
+          $ref: "#/components/schemas/AssetAttributes"
+        reason:
+          type: "string"
+        vulnerabilityDetectionId:
+          type: "string"
+      required:
+      - "id"
+      - "attributes"
+      - "reason"
+      - "vulnerabilityDetectionId"
+    SetVulnerabilityDetectionDisposition:
+      type: "object"
+      properties:
+        updates:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+              disposition:
+                $ref: "#/components/schemas/Disposition"
+              reason:
+                type: "string"
+            required:
+            - "id"
+            - "disposition"
+            - "reason"
+      required:
+      - "updates"
+    SetVulnerabilityState:
+      type: "object"
+      properties:
+        updates:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+              state:
+                type: "string"
+                enum:
+                - "ENABLED"
+                - "DISABLED"
+              reason:
+                type: "string"
+            required:
+            - "id"
+            - "state"
+            - "reason"
+      required:
+      - "updates"
+    Sort:
+      type: "object"
+      properties:
+        field:
+          type: "string"
+        descending:
+          type: "boolean"
+      required:
+      - "field"
+      - "descending"
+    Stat:
+      type: "object"
+      properties:
+        field:
+          type: "string"
+        grouped:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Bucket"
+    Stats:
+      type: "object"
+      properties:
+        totalCount:
+          type: "integer"
+          format: "int64"
+        stats:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Stat"
+    TextSearchMatcher:
+      allOf:
+      - $ref: "#/components/schemas/ValueMatcher"
+      - type: "object"
+        properties:
+          fields:
+            type: "array"
+            items:
+              type: "string"
+          search:
+            $ref: "#/components/schemas/AnyValue"
+        required:
+        - "fields"
+        - "search"
+    UnboundedTimeRange:
+      type: "object"
+      properties:
+        from:
+          type: "string"
+          format: "date-time"
+          example: "2023-03-27T05:10:02Z"
+        to:
+          type: "string"
+          format: "date-time"
+          example: "2023-03-27T05:10:02Z"
+      required:
+      - "from"
+    UpdateDispositionAction:
+      allOf:
+      - $ref: "#/components/schemas/RuleAction"
+      - type: "object"
+        properties:
+          disposition:
+            $ref: "#/components/schemas/Disposition"
+        required:
+        - "disposition"
+    UpdateResponse:
+      type: "object"
+      properties:
+        updated:
+          type: "integer"
+        errored:
+          type: "array"
+          items:
+            type: "string"
+    UpdateRiskAction:
+      allOf:
+      - $ref: "#/components/schemas/RuleAction"
+      - type: "object"
+        properties:
+          risk:
+            type: "number"
+            format: "double"
+        required:
+        - "risk"
+    ValueMatcher:
+      type: "object"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          exact: "#/components/schemas/ExactMatcher"
+          matches: "#/components/schemas/MatchesMatcher"
+          regex: "#/components/schemas/RegexMatcher"
+          dateRange: "#/components/schemas/DateRangeMatcher"
+          range: "#/components/schemas/RangeMatcher"
+          textSearch: "#/components/schemas/TextSearchMatcher"
+          wildcard: "#/components/schemas/WildcardMatcher"
+      properties:
+        type:
+          type: "string"
+      required:
+      - "type"
+    Vulnerability:
+      type: "object"
+      description: "VulnerabilityCatalog subset of DOTS 1.7.0-2"
+      additionalProperties: true
+    VulnerabilityContent:
+      type: "object"
+      properties:
+        content:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Vulnerability"
+      required:
+      - "content"
+    VulnerabilityDetection:
+      type: "object"
+      description: "VulnerabilityDetection subset of DOTS 1.7.0-2"
+      additionalProperties: true
+    VulnerabilityDetectionContent:
+      type: "object"
+      properties:
+        content:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/VulnerabilityDetection"
+      required:
+      - "content"
+    VulnerabilityDetectionRepublish:
+      type: "object"
+      properties:
+        batchSize:
+          type: "integer"
+          default: 1000
+        jobId:
+          type: "string"
+          default: null
+        selector:
+          $ref: "#/components/schemas/Selector"
+      required:
+      - "selector"
+      - "batchSize"
+    VulnerabilityDetectionRule:
+      allOf:
+      - $ref: "#/components/schemas/VulnerabilityDetectionRuleBase"
+      - type: "object"
+        properties:
+          uuid:
+            type: "string"
+          author:
+            type: "string"
+          lastModifiedBy:
+            type: "string"
+          lastModifiedAt:
+            type: "string"
+            format: "date-time"
+            example: "2023-03-27T05:10:02Z"
+          createdAt:
+            type: "string"
+            format: "date-time"
+            example: "2023-03-27T05:10:02Z"
+          version:
+            type: "integer"
+      required:
+      - "uuid"
+      - "author"
+      - "selector"
+      - "actions"
+      - "name"
+      - "description"
+    VulnerabilityDetectionRuleBase:
+      type: "object"
+      properties:
+        selector:
+          $ref: "#/components/schemas/Selector"
+        actions:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/RuleAction"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        category:
+          type: "string"
+        license:
+          type: "string"
+        reference:
+          type: "string"
+        expiration:
+          type: "string"
+          format: "date-time"
+          example: "2023-03-27T05:10:02Z"
+    VulnerabilityDetectionRuleContent:
+      type: "object"
+      properties:
+        content:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/VulnerabilityDetectionRule"
+      required:
+      - "content"
+    VulnerabilityDetectionRuleCreate:
+      allOf:
+      - $ref: "#/components/schemas/VulnerabilityDetectionRuleBase"
+      required:
+      - "selector"
+      - "actions"
+      - "name"
+      - "description"
+    VulnerabilityDetectionRuleUpdate:
+      allOf:
+      - $ref: "#/components/schemas/VulnerabilityDetectionRuleBase"
+      - type: "object"
+        properties:
+          uuid:
+            type: "string"
+      required:
+      - "uuid"
+    VulnerabilityDetectionUpdate:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        disposition:
+          $ref: "#/components/schemas/Disposition"
+        priority:
+          $ref: "#/components/schemas/Priority"
+        reason:
+          type: "string"
+      required:
+      - "id"
+      - "reason"
+    VulnerabilityDetectionUpdates:
+      type: "object"
+      properties:
+        updates:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/VulnerabilityDetectionUpdate"
+      required:
+      - "updates"
+    VulnerabilityManagementAuditLog:
+      type: "object"
+      description: "VulnerabilityMgmtAudit subset of DOTS 1.7.0-2"
+      additionalProperties: true
+    VulnerabilityManagementAuditLogContent:
+      type: "object"
+      properties:
+        content:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/VulnerabilityManagementAuditLog"
+      required:
+      - "content"
+    WildcardMatcher:
+      allOf:
+      - $ref: "#/components/schemas/ValueMatcher"
+      - type: "object"
+        properties:
+          field:
+            type: "string"
+          pattern:
+            type: "string"
+          caseInsensitive:
+            type: "boolean"
+            default: true
+        required:
+        - "field"
+        - "pattern"
+        - "caseInsensitive"
